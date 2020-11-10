@@ -1,0 +1,6 @@
+[submodule "sdks/imtui"]
+	path = sdks/imtui
+	url = https://github.com/ggerganov/imtui
+[submodule "sdks/yaml"]
+	path = sdks/yaml
+	url = https://github.com/jimmiebergmann/mini-yaml
