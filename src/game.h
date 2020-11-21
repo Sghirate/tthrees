@@ -15,6 +15,7 @@ struct game
         active = 0,
         animating,
         game_over,
+        game_won,
 
         count,
     };
@@ -86,13 +87,14 @@ private:
     uint8_t tile_move_result(pos from, pos to);
     bool board_move_possible(inputs dir);
     bool game_over();
+    bool game_won();
     pos move_diff(inputs dir);
     bool try_tile_move(pos from, pos to);
     bool try_board_move(inputs dir);
     uint8_t pick_random_value();
     pos pick_random_target(inputs dir);
     inputs read_input() const;
-    void update(inputs input);
+    bool update(inputs input);
     void draw() const;
 
     config cfg;

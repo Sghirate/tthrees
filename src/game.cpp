@@ -13,18 +13,49 @@
 
 namespace
 {
-
 path_instance<PATH_MAX> g_style_path(path::get_home(), "/.tthrees/style");
 file_watcher g_style_watcher(g_style_path.c_str());
 ImTui::TScreen* g_screen = nullptr;
 const char* g_bindings = "Restart (F5) | Quit (q)";
+// we have limited space in our tiles - therefore we have a limited number of possible tile values.
+// btw, formula for the tile values: f(i) = floor(2^i - 2^(i-2))
+//  => let's bake em in!
+const char g_texts[][9] = {
+    "",
+    "1",
+    "2",
+    "3",
+    "6",
+    "12",
+    "24",
+    "48",
+    "96",
+    "192",
+    "384",
+    "768",
+    "1536",
+    "3072",
+    "6144",
+    "12288",
+    "24576",
+    "49152",
+    "98304",
+    "196608",
+    "393216",
+    "786432",
+    "1572864",
+    "3145728",
+    "6291456",
+    "1582912",
+    "25165824",
+    "50331648",
+};
 
-struct keyMapping
+struct
 {
     uint16_t key;
     game::inputs input;
-};
-keyMapping g_keyMap[] = { // note: order determines priority!
+} g_keyMap[] = { // note: order determines priority (descending)!
     { 'q',       game::inputs::quit },
     { KEY_F(5),  game::inputs::restart },
     { KEY_LEFT,  game::inputs::left },
@@ -33,7 +64,35 @@ keyMapping g_keyMap[] = { // note: order determines priority!
     { KEY_DOWN,  game::inputs::down },
     { ' ',       game::inputs::space },
 };
+struct deck
+{
+    deck()
+    {
+        reset();
+    }
 
+    void reset()
+    {
+        for (int i = 0; i < 12; ++i)
+        {
+            buffer[i] = (i / 4) + 1;
+        }
+        n = 12;
+        std::random_shuffle(buffer, buffer + 12);
+    }
+    bool empty() const
+    {
+        return n <= 0;
+    }
+    uint8_t pop()
+    {
+        return buffer[--n];
+    }
+
+private:
+    uint8_t buffer[12];
+    uint8_t n;
+} g_deck;
 template<typename T, uint8_t SIZE>
 struct random_pool
 {
@@ -67,62 +126,7 @@ private:
     T options[SIZE];
     uint8_t n;
 };
-struct deck
-{
-    deck()
-    {
-        reset();
-    }
-
-    void reset()
-    {
-        for (int i = 0; i < 12; ++i)
-        {
-            buffer[i] = (i / 4) + 1;
-        }
-        n = 12;
-        std::random_shuffle(buffer, buffer + 12);
-    }
-    bool empty() const
-    {
-        return n <= 0;
-    }
-    uint8_t pop()
-    {
-        return buffer[--n];
-    }
-
-private:
-    uint8_t buffer[12];
-    uint8_t n;
-} g_deck;
 random_pool<uint8_t, 32> g_bonus_deck;
-struct tile_texts_helper
-{
-    enum { NUM_TEXTS = 128 };
-    enum { MAX_TILE_TEXT_LENGTH = 16 };
-
-    tile_texts_helper()
-    {
-        strncpy(buffers[0], "", MAX_TILE_TEXT_LENGTH);
-        strncpy(buffers[1], "1", MAX_TILE_TEXT_LENGTH);
-        strncpy(buffers[2], "2", MAX_TILE_TEXT_LENGTH);
-        int x = 3;
-        for (int i = 3; i < NUM_TEXTS; ++i)
-        {
-            snprintf(buffers[i], MAX_TILE_TEXT_LENGTH, "%i", x);
-            x*=2;
-        }
-    }
-
-    const char* operator [](uint8_t i) const
-    {
-        return i < NUM_TEXTS ? buffers[i] : buffers[0];
-    }
-
-private:
-    char buffers[NUM_TEXTS][MAX_TILE_TEXT_LENGTH];
-} g_texts;
 
 struct
 {
@@ -142,6 +146,24 @@ struct board_renderer
         return rpos(
             cfg.pos_x + p.x * (cfg.tile_width + cfg.tile_spacing),
             cfg.pos_y + p.y * (cfg.tile_height + cfg.tile_spacing));
+    }
+
+    template <typename t>
+    static t clamp(t x, t min, t max)
+    {
+        if (x < min) x = min;
+        if (x > max) x = max;
+        return x;
+    }
+
+    static float smoothstep(float x)
+    {
+        return x * x * (3.0f - 2.0f * x);
+    }
+
+    static float smootherstep(float x)
+    {
+        return x * x * x * (x * (x * 6.0f - 15.0f) + 10.0f);
     }
 
     static float interpolate(float from, float to, float alpha)
@@ -228,7 +250,7 @@ struct board_renderer
                 interpolate(
                     calc_render_pos(cfg, a.from),
                     calc_render_pos(cfg, a.to),
-                    anim.alpha*anim.alpha*anim.alpha));
+                    smootherstep(clamp(anim.alpha, 0.0f, 1.0f))));
         });
 
         // draw next tile:
@@ -289,7 +311,7 @@ game::game()
 
     imgui_style::load(g_style_path.c_str());
 
-    g_screen = ImTui_ImplNcurses_Init(true, 30.0f, 5.0f);
+    g_screen = ImTui_ImplNcurses_Init(true, 60.0f, 5.0f);
     ImTui_ImplText_Init();
 
     ImGuiIO &io = ImGui::GetIO();
@@ -331,13 +353,13 @@ int game::tick()
     ImGui::NewFrame();
 
     inputs input = read_input();
-    update(input);
+    bool active = update(input);
     draw();
 
     ImGui::Render();
 
     ImTui_ImplText_RenderDrawData(ImGui::GetDrawData(), g_screen);
-    ImTui_ImplNcurses_DrawScreen();
+    ImTui_ImplNcurses_DrawScreen(active);
 
     return 0;
 }
@@ -437,6 +459,19 @@ bool game::game_over()
     return true;
 }
 
+bool game::game_won()
+{
+    for (int i = 0; i < BOARD_SIZE; ++i)
+    {
+        constexpr int max = sizeof(g_texts)/sizeof(g_texts[0]) - 1;
+        if (state.tiles[i] == max)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 game::pos game::move_diff(inputs dir)
 {
     switch (dir)
@@ -505,7 +540,6 @@ bool game::try_board_move(inputs dir)
 uint8_t game::pick_random_value()
 {
     // pretty much exactly taken from threesjs, with the math modified to match the value representation used here.
-    // . . . maybe correct, maybe not . . . 
     bool bonus = std::any_of(state.tiles, state.tiles + BOARD_EXTENT, [](uint8_t v) { return v >= 7; });
     if (bonus && (rand() % 100) < 5)
     {
@@ -576,8 +610,9 @@ game::inputs game::read_input() const
     return inputs::none;
 }
 
-void game::update(inputs input)
+bool game::update(inputs input)
 {
+    bool stateChanged = false;
     if (input == inputs::quit)
     {
         quit = true;
@@ -585,10 +620,10 @@ void game::update(inputs input)
     else if (input == inputs::restart)
     {
         reset();
+        stateChanged = true;
     }
 
     ImGuiIO &io = ImGui::GetIO();
-
     switch (phase)
     {
     case phases::active:
@@ -596,6 +631,7 @@ void game::update(inputs input)
         {
             anim.alpha = 0.0f;
             phase = phases::animating;
+            stateChanged = true;
         }
         break;
     case phases::animating:
@@ -608,16 +644,20 @@ void game::update(inputs input)
             }
             anim.reset();
 
-            phase = game_over() ? phases::game_over : phases::active;
+            phase = game_over() ? phases::game_over : (game_won() ? phases::game_won : phases::active);
         }
+        stateChanged = true;
         break;
     case phases::game_over:
+    case phases::game_won:
         if (input == inputs::space)
         {
             reset();
+            stateChanged = true;
         }
         break;
     }
+    return stateChanged;
 }
 
 void game::draw() const
@@ -639,11 +679,15 @@ void game::draw() const
     {
         board_renderer::render(cfg, state, anim, next);
 
-        if (phase == phases::game_over)
+        if (phase == phases::game_over ||
+            phase == phases::game_won)
         {
             ImGui::SetNextWindowPos(ImVec2(cfg.pos_x, cfg.pos_y + (BOARD_EXTENT / 2) * (cfg.tile_height + cfg.tile_spacing) - 2.5f));
             ImGui::SetNextWindowSize(ImVec2(BOARD_EXTENT * (cfg.tile_width + cfg.tile_spacing) - 1.0f, 5.0f));
-            if (ImGui::Begin("Game Over!", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
+            if (ImGui::Begin(
+                phase == phases::game_over ? "Game Over!" : "GAME WON!", 
+                nullptr, 
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
             {
                 ImGui::Dummy(ImVec2(0.0f, 1.0f));
                 ImGui::Text("Press space to start again");
