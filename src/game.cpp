@@ -250,7 +250,9 @@ struct board_renderer
                 interpolate(
                     calc_render_pos(cfg, a.from),
                     calc_render_pos(cfg, a.to),
-                    smootherstep(clamp(anim.alpha, 0.0f, 1.0f))));
+                    smootherstep(clamp(anim.alpha, 0.0f, 0.9f))));
+            // note: 0.9f is used to prevent an occasional overshoot issue
+            //  might be worth trying to figure out why it happens . . .
         });
 
         // draw next tile:
