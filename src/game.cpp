@@ -64,6 +64,7 @@ struct
     { KEY_DOWN,  game::inputs::down },
     { ' ',       game::inputs::space },
 };
+template<uint8_t SIZE>
 struct deck
 {
     deck()
@@ -73,12 +74,12 @@ struct deck
 
     void reset()
     {
-        for (int i = 0; i < 12; ++i)
+        for (int i = 0; i < SIZE; ++i)
         {
-            buffer[i] = (i / 4) + 1;
+            buffer[i] = (i / (SIZE / 3)) + 1;
         }
         n = 12;
-        std::random_shuffle(buffer, buffer + 12);
+        std::random_shuffle(buffer, buffer + SIZE);
     }
     bool empty() const
     {
@@ -90,9 +91,10 @@ struct deck
     }
 
 private:
-    uint8_t buffer[12];
+    uint8_t buffer[SIZE];
     uint8_t n;
-} g_deck;
+};
+deck<12> g_deck;
 template<typename T, uint8_t SIZE>
 struct random_pool
 {
