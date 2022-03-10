@@ -1,6 +1,6 @@
 # tthrees
 
-Terminal version of [Threes](http://asherv.com/threes/), to try out [imtui](https://github.com/ggerganov/imtui).
+Terminal version of [Threes](http://asherv.com/threes/), initially to try out [imtui](https://github.com/ggerganov/imtui) - however, by now everything related to it has been replaced by custom code (tui.h).
 
 ## Building
 
@@ -8,7 +8,7 @@ Terminal version of [Threes](http://asherv.com/threes/), to try out [imtui](http
 
 Prerequisites:
 * CMake (>= 3.10)
-* A C++ compiler (for example GCC 7.5.0)
+* A C++ compiler (tested with GCC/G++ 9.3.0 & Clang 10.0.0)
 * ncurses (libncurses5-dev)
 
 ```bash
@@ -21,14 +21,9 @@ make
 ./bin/tthrees
 ```
 
-## Third Party SDKs
-
-|Software                                                |License     |Comment                     |
-|--------------------------------------------------------|------------|----------------------------|
-|[imtui](https://github.com/ggerganov/imtui)             |MIT         |UI library, terminal backend|
-|[imgui](https://github.com/ocornut/imgui)               |MIT         |UI library, frontend        |
-|[mini-yaml](https://github.com/jimmiebergmann/mini-yaml)|MIT         |YAML parser                 |
-|[google-test](https://github.com/google/googletest)     |BSD-3-Clause| Used by mini-yaml          |
+**Windows**:
+* CMake (>= 3.10)
+* A C++ compiler (tested with MSVC 2019)
 
 ## License
 

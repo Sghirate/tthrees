@@ -3,39 +3,39 @@
 #include <stdint.h>
 
 template <typename T, uint32_t GRID_SIZE = 0>
-struct pos2d
+struct Pos2D
 {
     T x, y;
 
-    pos2d() :x(0), y(0) {}
-    pos2d(T x, T y) : x(x), y(y) {}
-    pos2d(const pos2d& v) : x(v.x), y(v.y) {}
-    pos2d(T id) : x(GRID_SIZE > 0 ? id % GRID_SIZE : 0), y(GRID_SIZE > 0 ? id / GRID_SIZE : 0) {}
+    Pos2D() :x(0), y(0) {}
+    Pos2D(T x, T y) : x(x), y(y) {}
+    Pos2D(const Pos2D& v) : x(v.x), y(v.y) {}
+    Pos2D(T id) : x(GRID_SIZE > 0 ? id % GRID_SIZE : 0), y(GRID_SIZE > 0 ? id / GRID_SIZE : 0) {}
 
-    pos2d& operator=(const pos2d& v)
+    Pos2D& operator=(const Pos2D& v)
     {
         x = v.x;
         y = v.y;
         return *this;
     }
 
-    pos2d operator+(pos2d& v)
+    Pos2D operator+(Pos2D& v)
     {
-        return pos2d(x + v.x, y + v.y);
+        return Pos2D(x + v.x, y + v.y);
     }
-    pos2d operator-(pos2d& v)
+    Pos2D operator-(Pos2D& v)
     {
-        return pos2d(x - v.x, y - v.y);
+        return Pos2D(x - v.x, y - v.y);
     }
 
-    pos2d& operator+=(pos2d& v)
+    Pos2D& operator+=(Pos2D& v)
     {
         x += v.x;
         y += v.y;
         return *this;
     }
 
-    pos2d& operator-=(pos2d& v)
+    Pos2D& operator-=(Pos2D& v)
     {
         x -= v.x;
         y -= v.y;
@@ -57,7 +57,7 @@ struct pos2d
         return *(reinterpret_cast<const T*>(this) + i);
     }
 
-    void set(T x, T y)
+    void Set(T x, T y)
     {
         this->x = x;
         this->y = y;

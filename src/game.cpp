@@ -1,278 +1,249 @@
-#include <game.h>
-#include <imtui/imtui.h>
-#include <imtui/imtui-impl-ncurses.h>
-#include <util/path.h>
-#include <util/file_watcher.h>
-#include <util/imgui_style.h>
-#include <util/imgui_keys.h>
-#include <curses.h>
-#include <limits.h>
-#include <stdint.h>
-#include <vector>
+#include "game.h"
+#include "tui.h"
 #include <algorithm>
+#include <random>
 
 namespace
 {
-path_instance<PATH_MAX> g_style_path(path::get_home(), "/.tthrees/style");
-file_watcher g_style_watcher(g_style_path.c_str());
-ImTui::TScreen* g_screen = nullptr;
 const char* g_bindings = "Restart (F5) | Quit (q)";
 // we have limited space in our tiles - therefore we have a limited number of possible tile values.
 // btw, formula for the tile values: f(i) = floor(2^i - 2^(i-2))
 //  => let's bake em in!
 const char g_texts[][9] = {
-    "",
-    "1",
-    "2",
-    "3",
-    "6",
-    "12",
-    "24",
-    "48",
-    "96",
-    "192",
-    "384",
-    "768",
-    "1536",
-    "3072",
-    "6144",
-    "12288",
-    "24576",
-    "49152",
-    "98304",
-    "196608",
-    "393216",
-    "786432",
-    "1572864",
-    "3145728",
-    "6291456",
-    "1582912",
+    "        ",
+    "    1   ",
+    "    2   ",
+    "    3   ",
+    "    6   ",
+    "   12   ",
+    "   24   ",
+    "   48   ",
+    "   96   ",
+    "   192  ",
+    "   384  ",
+    "   768  ",
+    "  1536  ",
+    "  3072  ",
+    "  6144  ",
+    "  12288 ",
+    "  24576 ",
+    "  49152 ",
+    "  98304 ",
+    " 196608 ",
+    " 393216 ",
+    " 786432 ",
+    " 1572864",
+    " 3145728",
+    " 6291456",
+    " 1582912",
     "25165824",
     "50331648",
 };
 
 struct
 {
-    uint16_t key;
-    game::inputs input;
+    TUI::EKeys key;
+    Game::EInputs input;
 } g_keyMap[] = { // note: order determines priority (descending)!
-    { 'q',       game::inputs::quit },
-    { KEY_F(5),  game::inputs::restart },
-    { KEY_LEFT,  game::inputs::left },
-    { KEY_UP,    game::inputs::up },
-    { KEY_RIGHT, game::inputs::right },
-    { KEY_DOWN,  game::inputs::down },
-    { ' ',       game::inputs::space },
+    { TUI::EKeys::Key_Q,     Game::EInputs::Quit    },
+    { TUI::EKeys::Key_F5,    Game::EInputs::Restart },
+    { TUI::EKeys::Key_Left,  Game::EInputs::Left    },
+    { TUI::EKeys::Key_Up,    Game::EInputs::Up      },
+    { TUI::EKeys::Key_Right, Game::EInputs::Right   },
+    { TUI::EKeys::Key_Down,  Game::EInputs::Down    },
+    { TUI::EKeys::Key_Space, Game::EInputs::Space   },
 };
 template<uint8_t SIZE>
-struct deck
+struct Deck
 {
-    deck()
+    Deck()
     {
-        reset();
+        Reset();
     }
 
-    void reset()
+    void Reset()
     {
         for (int i = 0; i < SIZE; ++i)
         {
-            buffer[i] = (i / (SIZE / 3)) + 1;
+            m_buffer[i] = (i / (SIZE / 3)) + 1;
         }
-        n = 12;
-        std::random_shuffle(buffer, buffer + SIZE);
+        m_n = 12;
+        std::random_device rd;
+        std::minstd_rand0 g(rd());
+        std::shuffle(m_buffer, m_buffer + SIZE, g);
     }
-    bool empty() const
+    bool IsEmpty() const
     {
-        return n <= 0;
+        return m_n <= 0;
     }
-    uint8_t pop()
+    uint8_t Pop()
     {
-        return buffer[--n];
+        return m_buffer[--m_n];
     }
 
 private:
-    uint8_t buffer[SIZE];
-    uint8_t n;
+    uint8_t m_buffer[SIZE];
+    uint8_t m_n;
 };
-deck<12> g_deck;
+Deck<12> g_deck;
 template<typename T, uint8_t SIZE>
-struct random_pool
+struct RandomPool
 {
-    random_pool() : n(0) {}
+    RandomPool() : m_n(0) {}
 
-    void push(const T& option)
+    void Push(const T& option)
     {
-        options[n++] = option;
+        m_options[m_n++] = option;
     }
-    void push_unique(const T& option)
+    void PushUnique(const T& option)
     {
-        for (int i = 0; i < n; ++i)
+        for (int i = 0; i < m_n; ++i)
         {
-            if (options[i] == option)
+            if (m_options[i] == option)
             {
                 return;
             }
         }
-        push(option);
+        Push(option);
     }
-    T pick()
+    T Pick()
     {
-        return options[rand() % n];
+        return m_options[rand() % m_n];
     }
-    void clear()
+    void Clear()
     {
-        n = 0;
+        m_n = 0;
     }
 
 private:
-    T options[SIZE];
-    uint8_t n;
+    T m_options[SIZE];
+    uint8_t m_n;
 };
-random_pool<uint8_t, 32> g_bonus_deck;
+RandomPool<uint8_t, 32> g_bonus_deck;
 
-struct
+struct BoardRenderer
 {
-    const ImU32 yellow = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f,1.0f,0.0f,1.0f));
-    const ImU32 blue = ImGui::ColorConvertFloat4ToU32(ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
-    const ImU32 red = ImGui::ColorConvertFloat4ToU32(ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-    const ImU32 gray = ImGui::ColorConvertFloat4ToU32(ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-    const ImU32 black = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-    const ImU32 white = ImGui::ColorConvertFloat4ToU32(ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-} colU32;	
-struct board_renderer
-{
-    typedef pos2d<float> rpos;
+    typedef Pos2D<int> rpos;
 
-    static rpos calc_render_pos(const game::config& cfg, const game::pos& p)
+    static rpos CalculateRenderPosition(const Game::Config& a_cfg, const Game::pos& a_pos)
     {
         return rpos(
-            cfg.pos_x + p.x * (cfg.tile_width + cfg.tile_spacing),
-            cfg.pos_y + p.y * (cfg.tile_height + cfg.tile_spacing));
+            a_cfg.posX + a_pos.x * (a_cfg.tileWidth + a_cfg.tileSpacing),
+            a_cfg.posY + a_pos.y * (a_cfg.tileHeight + a_cfg.tileSpacing));
     }
 
     template <typename t>
-    static t clamp(t x, t min, t max)
+    static t Clamp(t a_x, t a_min, t a_max)
     {
-        if (x < min) x = min;
-        if (x > max) x = max;
-        return x;
+        if (a_x < a_min) a_x = a_min;
+        if (a_x > a_max) a_x = a_max;
+        return a_x;
     }
 
-    static float smoothstep(float x)
+    static float Smoothstep(float a_x)
     {
-        return x * x * (3.0f - 2.0f * x);
+        return a_x * a_x * (3.0f - 2.0f * a_x);
     }
 
-    static float smootherstep(float x)
+    static float Smootherstep(float a_x)
     {
-        return x * x * x * (x * (x * 6.0f - 15.0f) + 10.0f);
+        return a_x * a_x * a_x * (a_x * (a_x * 6.0f - 15.0f) + 10.0f);
     }
 
-    static float interpolate(float from, float to, float alpha)
+    static float Interpolate(float a_from, float a_to, float a_alpha)
     {
-        return from + (to - from) * alpha;
+        return a_from + (a_to - a_from) * a_alpha;
     }
 
-    static rpos interpolate(const rpos& from, const rpos& to, float alpha)
+    static rpos Interpolate(const rpos& a_from, const rpos& a_to, float a_alpha)
     {
         return rpos(
-            interpolate(from.x, to.x, alpha),
-            interpolate(from.y, to.y, alpha));
+            (int)Interpolate((float)a_from.x, (float)a_to.x, a_alpha),
+            (int)Interpolate((float)a_from.y, (float)a_to.y, a_alpha));
     }
 
-    static void render_tile(const game::config& cfg, uint8_t value, const rpos& r, bool draw_value = true)
+    static void RenderTile(const Game::Config& a_cfg, uint8_t a_value, const rpos& r, bool a_drawValue = true)
     {
-        ImU32 color = colU32.white;
-        if (value == 1)
+        TUI::Color c(TUI::EColors::Black, TUI::EColors::LightGray);
+        switch (a_value)
         {
-            color = colU32.blue;
+            case 1: c = TUI::Color(TUI::EColors::Black, TUI::EColors::LightBlue); break;
+            case 2: c = TUI::Color(TUI::EColors::Black, TUI::EColors::LightRed); break;
         }
-        else if(value == 2)
-        {
-            color = colU32.red;
-        }
-
-        ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        draw_list->AddRectFilled(ImVec2(r.x, r.y), ImVec2(r.x + cfg.tile_width - 0.5f, r.y + cfg.tile_height - 0.5f), color, 0.0f, ImDrawCornerFlags_None);
-        if (draw_value)
-        {
-            ImVec2 text_size = ImGui::CalcTextSize(g_texts[value]);
-            draw_list->AddText(
-                ImVec2(
-                    r.x + (cfg.tile_width - text_size.x) / 2.0f - 0.5f,
-                    r.y + cfg.tile_height / 2 - 0.5f), 
-                colU32.black,
-                g_texts[value]);
-        }
+        TUI::ColorScope applyColor(c);
+        TUI::DrawRect(r.x, r.y, a_cfg.tileWidth, a_cfg.tileHeight);
+        TUI::DrawText(r.x, r.y + a_cfg.tileHeight / 2, g_texts[a_value]);
     }
 
-    static void render(const game::config& cfg, const game::board& state, const game::board_animation& anim, uint8_t next)
+    static void Render(const Game::Config& a_cfg, const Game::Board& a_state, const Game::BoardAnimation& a_anim, uint8_t a_next)
     {
-        
-        ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        ImGuiStyle& style = ImGui::GetStyle();
+        int canvasWidth, canvasHeight;
+        TUI::GetSize(canvasWidth, canvasHeight);
 
-        // draw lines
-        for (int i = 0; i <= game::BOARD_EXTENT; ++i)
+        // draw background
         {
-            draw_list->AddLine(
-                ImVec2(cfg.pos_x - cfg.tile_spacing, cfg.pos_y - cfg.tile_spacing + (i * (cfg.tile_height + cfg.tile_spacing))),
-                ImVec2(cfg.pos_x + game::BOARD_EXTENT * (cfg.tile_width + cfg.tile_spacing) - 0.5f, cfg.pos_y - cfg.tile_spacing + (i * (cfg.tile_height + cfg.tile_spacing))),
-                colU32.gray, 
-                0.0f);
-
-            draw_list->AddLine(
-                ImVec2(cfg.pos_x - cfg.tile_spacing + (i * (cfg.tile_width + cfg.tile_spacing)), cfg.pos_y - cfg.tile_spacing),
-                ImVec2(cfg.pos_x - cfg.tile_spacing + (i * (cfg.tile_width + cfg.tile_spacing)) , cfg.pos_y - cfg.tile_spacing + game::BOARD_EXTENT * (cfg.tile_height + cfg.tile_spacing) - 0.5f),
-                colU32.gray, 
-                0.0f);
-        }
-
-        // draw fixed tiles
-        for (uint8_t y = 0; y < game::BOARD_EXTENT; ++y)
-        {
-            for (uint8_t x = 0; x < game::BOARD_EXTENT; ++x)
+            TUI::ColorScope boardLineColor(TUI::EColors::White, TUI::EColors::DarkGray);
+            const int boardWidth = Game::BOARD_EXTENT * (a_cfg.tileWidth + 1);
+            const int boardHeight = Game::BOARD_EXTENT * (a_cfg.tileHeight + 1);
+            TUI::DrawRect(a_cfg.posX, a_cfg.posY, boardWidth, boardHeight);
+            TUI::ColorScope boardBackgroundColor(TUI::EColors::White, TUI::EColors::Black);
+            for (int i = 0; i <= Game::BOARD_EXTENT; ++i)
             {
-                game::pos p(x, y);
-                if (state.tiles[p] == 0)
+                TUI::DrawLine(
+                    a_cfg.posX - a_cfg.tileSpacing, 
+                    a_cfg.posY - a_cfg.tileSpacing + (i * (a_cfg.tileHeight + a_cfg.tileSpacing)),
+                    a_cfg.posX + Game::BOARD_EXTENT * (a_cfg.tileWidth + a_cfg.tileSpacing) - a_cfg.tileSpacing,
+                    a_cfg.posY - a_cfg.tileSpacing + (i * (a_cfg.tileHeight + a_cfg.tileSpacing)));
+                TUI::DrawLine(
+                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)), 
+                    a_cfg.posY - a_cfg.tileSpacing,
+                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)), 
+                    a_cfg.posY - a_cfg.tileSpacing + Game::BOARD_EXTENT * (a_cfg.tileHeight + a_cfg.tileSpacing));
+            }
+        }
+        // draw fixed tiles
+        for (uint8_t y = 0; y < Game::BOARD_EXTENT; ++y)
+        {
+            for (uint8_t x = 0; x < Game::BOARD_EXTENT; ++x)
+            {
+                Game::pos p(x, y);
+                if (a_state.tiles[p] == 0)
                 {
                     continue;
                 }
-
-                render_tile(cfg, state.tiles[p], calc_render_pos(cfg, p));
+                RenderTile(a_cfg, a_state.tiles[p], CalculateRenderPosition(a_cfg, p));
             }
         }
-
-        // draw moving tiles
-        std::for_each(anim.moving, anim.moving + anim.moving_count, [&](const game::tile_animation& a)
+        // // draw moving tiles
+        std::for_each(a_anim.moving, a_anim.moving + a_anim.nMoving, [&](const Game::TileAnimation& a)
         {
-            render_tile(
-                cfg,
+            RenderTile(
+                a_cfg,
                 a.value,
-                interpolate(
-                    calc_render_pos(cfg, a.from),
-                    calc_render_pos(cfg, a.to),
-                    smootherstep(clamp(anim.alpha, 0.0f, 0.9f))));
+                Interpolate(
+                    CalculateRenderPosition(a_cfg, a.from),
+                    CalculateRenderPosition(a_cfg, a.to),
+                    Smootherstep(Clamp(a_anim.alpha, 0.0f, 0.9f))));
             // note: 0.9f is used to prevent an occasional overshoot issue
             //  might be worth trying to figure out why it happens . . .
         });
-
-        // draw next tile:
-        static game::pos next_tile_pos(5, 0);
-        rpos r = calc_render_pos(cfg, next_tile_pos);
-        draw_list->AddText(ImVec2(r.x, r.y - 1.0f), ImGui::GetColorU32(style.Colors[ImGuiCol_Text]), "Next:");
-        render_tile(cfg, next, r, false);
+        // draw next tile
+        static Game::pos next_tile_pos(5, 0);
+        rpos r = CalculateRenderPosition(a_cfg, next_tile_pos);
+        TUI::ColorScope headerColor(TUI::EColors::White, TUI::EColors::Black);
+        TUI::DrawText(r.x, r.y - 1, "Next:");
+        RenderTile(a_cfg, a_next, r, false);
     }
 };
 
 } // namespace
 
-game::board::board()
+Game::Board::Board()
 {
-    reset();
+    Reset();
 }
 
-void game::board::reset()
+void Game::Board::Reset()
 {
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
@@ -283,59 +254,43 @@ void game::board::reset()
     tiles[8] = 3;
 }
 
-game::board_animation::board_animation()
+Game::BoardAnimation::BoardAnimation()
 {
-    reset();
+    Reset();
 }
 
-void game::board_animation::push(tile_animation anim)
+void Game::BoardAnimation::Push(TileAnimation anim)
 {
-    moving[moving_count++] = anim;
+    moving[nMoving++] = anim;
 }
 
-void game::board_animation::reset()
+void Game::BoardAnimation::Reset()
 {
     alpha = 0.0f;
-    moving_count = 0;
+    nMoving = 0;
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
         result[i] = 0;
     }
 }
 
-game::game()
+Game::Game()
+    : quit(false)
 {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-
-    ImGuiStyle &style = ImGui::GetStyle();
-    style.WindowRounding = 0;
-    style.FrameRounding = 0;
-    style.ScrollbarRounding = 0;
-
-    imgui_style::load(g_style_path.c_str());
-
-    g_screen = ImTui_ImplNcurses_Init(true, 60.0f, 5.0f);
-    ImTui_ImplText_Init();
-
-    ImGuiIO &io = ImGui::GetIO();
-    io.NavActive = false;
-    io.NavVisible = false;
-
-    reset();
+    TUI::Init();
+    Reset();
 }
 
-game::~game()
+Game::~Game()
 {
-    ImTui_ImplText_Shutdown();
-    ImTui_ImplNcurses_Shutdown();
+    TUI::Shutdown();
 }
 
-int game::run()
+int Game::Run()
 {
     while (!quit)
     {
-        int res = tick();
+        int res = Tick();
         if (res != 0)
         {
             return res;
@@ -344,35 +299,27 @@ int game::run()
     return 0;
 }
 
-int game::tick()
+int Game::Tick()
 {
-    if (g_style_watcher.check_modified())
-    {
-        imgui_style::load(g_style_path.c_str());
-    }
+    bool sizeChanged;
+    TUI::BeginFrame(sizeChanged);
 
-    ImTui_ImplNcurses_NewFrame();
-    ImTui_ImplText_NewFrame();
+    EInputs input = ReadInput();
+    bool active = Update(input);
 
-    ImGui::NewFrame();
+    if (sizeChanged || active)
+        Draw();
 
-    inputs input = read_input();
-    bool active = update(input);
-    draw();
-
-    ImGui::Render();
-
-    ImTui_ImplText_RenderDrawData(ImGui::GetDrawData(), g_screen);
-    ImTui_ImplNcurses_DrawScreen(active);
+    TUI::EndFrame();
 
     return 0;
 }
 
-void game::reset()
+void Game::Reset()
 {
-    g_deck.reset();
-    state.reset();
-    anim.reset();
+    g_deck.Reset();
+    state.Reset();
+    anim.Reset();
     int n = 0;
     while(n < 9)
     {
@@ -381,68 +328,69 @@ void game::reset()
             rand() % BOARD_EXTENT);
         if (state.tiles[p] == 0)
         {
-            state.tiles[p] = pick_random_value();
+            state.tiles[p] = PickRandomValue();
             ++n;
         }
     }
-    next = pick_random_value();
-    phase = phases::active;
+    next = PickRandomValue();
+    phase = EPhases::Active;
 }
 
-uint8_t game::tile_move_result(pos from, pos diff)
+uint8_t Game::CalculateTileMoveResult(pos a_from, pos a_diff)
 {
-    pos to = from + diff;
-    if ((state.tiles[from] == 1 && state.tiles[to] == 2) ||
-        (state.tiles[from] == 2 && state.tiles[to] == 1)) // combine small numbers
+    pos to = a_from + a_diff;
+    if ((state.tiles[a_from] == 1 && state.tiles[to] == 2) ||
+        (state.tiles[a_from] == 2 && state.tiles[to] == 1)) // combine small numbers
     {
         return 3;
     }
-    else if (state.tiles[from] != 0 && state.tiles[to] == 0) // move to empty field
+    else if (state.tiles[a_from] != 0 && state.tiles[to] == 0) // move to empty field
     {
-        return state.tiles[from];
+        return state.tiles[a_from];
     }
-    else if (state.tiles[from] >= 3 &&
-        state.tiles[from] == state.tiles[to]) // combine non-small equal numbers
+    else if (state.tiles[a_from] >= 3 &&
+        state.tiles[a_from] == state.tiles[to]) // combine non-small equal numbers
     {
-        return state.tiles[from] + 1;
+        return state.tiles[a_from] + 1;
     }
     return 0;
 }
 
-bool game::board_move_possible(inputs dir)
+bool Game::IsBoardMovePossible(EInputs a_dir)
 {
-    pos diff = move_diff(dir);
-    switch (dir)
+    pos diff = CalculateMoveDiff(a_dir);
+    switch (a_dir)
     {
-    case inputs::left:
+    case EInputs::Left:
         for (int x = 1; x < BOARD_EXTENT;++x)
             for (int y = 0; y < BOARD_EXTENT;++y)
-                if (tile_move_result(pos(x, y), diff) > 0)
+                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
                     return true;
         break;
-    case inputs::right:
+    case EInputs::Right:
         for (int x = BOARD_EXTENT - 2; x >= 0;--x)
             for (int y = 0; y < BOARD_EXTENT;++y)
-                if (tile_move_result(pos(x, y), diff) > 0)
+                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
                     return true;
         break;
-    case inputs::up:
+    case EInputs::Up:
         for (int x = 0; x < BOARD_EXTENT;++x)
             for (int y = 1; y < BOARD_EXTENT;++y)
-                if (tile_move_result(pos(x, y), diff) > 0)
+                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
                     return true;
         break;
-    case inputs::down:
+    case EInputs::Down:
         for (int x = 0; x < BOARD_EXTENT;++x)
             for (int y = BOARD_EXTENT-2; y >= 0;--y)
-                if (tile_move_result(pos(x, y), diff) > 0)
+                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
                     return true;
         break;
+    default: break;
     }
     return false;
 }
 
-bool game::game_over()
+bool Game::IsGameOver()
 {
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
@@ -452,9 +400,9 @@ bool game::game_over()
         }
     }
 
-    for (uint8_t dir = static_cast<uint8_t>(inputs::first_dir); dir <= static_cast<uint8_t>(inputs::last_dir); ++dir)
+    for (uint8_t dir = static_cast<uint8_t>(EInputs::FirstDir); dir <= static_cast<uint8_t>(EInputs::LastDir); ++dir)
     {
-        if (board_move_possible(static_cast<inputs>(dir)))
+        if (IsBoardMovePossible(static_cast<EInputs>(dir)))
         {
             return false;
         }
@@ -463,7 +411,7 @@ bool game::game_over()
     return true;
 }
 
-bool game::game_won()
+bool Game::IsGameWon()
 {
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
@@ -476,229 +424,220 @@ bool game::game_won()
     return false;
 }
 
-game::pos game::move_diff(inputs dir)
+Game::pos Game::CalculateMoveDiff(EInputs a_dir)
 {
-    switch (dir)
+    switch (a_dir)
     {
-    case inputs::left:  return pos(-1,  0);
-    case inputs::right: return pos(+1,  0);
-    case inputs::up:    return pos( 0, -1);
-    case inputs::down:  return pos( 0, +1);
+    case EInputs::Left:  return pos(-1,  0);
+    case EInputs::Right: return pos(+1,  0);
+    case EInputs::Up:    return pos( 0, -1);
+    case EInputs::Down:  return pos( 0, +1);
+    default: break;
     }
     return pos(0, 0);
 }
 
-bool game::try_tile_move(pos from, pos diff)
+bool Game::TryMoveTile(pos a_from, pos a_diff)
 {
-    uint8_t result = tile_move_result(from, diff);
+    uint8_t result = CalculateTileMoveResult(a_from, a_diff);
     if (result > 0)
     {
-        pos to = from + diff;
-        anim.push(tile_animation(from, to, state.tiles[from]));
+        pos to = a_from + a_diff;
+        anim.Push(TileAnimation(a_from, to, state.tiles[a_from]));
         anim.result[to] = result;
-        state.tiles[from] = 0;
+        state.tiles[a_from] = 0;
         return true;
     }
     return false;
 }
 
-bool game::try_board_move(inputs dir)
+bool Game::TryMoveBoard(EInputs dir)
 {
-    pos diff = move_diff(dir);
+    pos diff = CalculateMoveDiff(dir);
     bool any = false;
     switch (dir)
     {
-    case inputs::left:
+    case EInputs::Left:
         for (int x = 1; x < BOARD_EXTENT;++x)
             for (int y = 0; y < BOARD_EXTENT;++y)
-                any |= try_tile_move(pos(x, y), diff);
+                any |= TryMoveTile(pos(x, y), diff);
         break;
-    case inputs::right:
+    case EInputs::Right:
         for (int x = BOARD_EXTENT - 2; x >= 0;--x)
             for (int y = 0; y < BOARD_EXTENT;++y)
-                any |= try_tile_move(pos(x, y), diff);
+                any |= TryMoveTile(pos(x, y), diff);
         break;
-    case inputs::up:
+    case EInputs::Up:
         for (int x = 0; x < BOARD_EXTENT;++x)
             for (int y = 1; y < BOARD_EXTENT;++y)
-                any |= try_tile_move(pos(x, y), diff);
+                any |= TryMoveTile(pos(x, y), diff);
         break;
-    case inputs::down:
+    case EInputs::Down:
         for (int x = 0; x < BOARD_EXTENT;++x)
             for (int y = BOARD_EXTENT-2; y >= 0;--y)
-                any |= try_tile_move(pos(x, y), diff);
+                any |= TryMoveTile(pos(x, y), diff);
         break;
+    default: break;
     }
 
     if (any)
     {
-        pos new_pos = pick_random_target(dir);
+        pos new_pos = PickRandomTarget(dir);
         anim.result[new_pos] = next;
-        anim.push(tile_animation(new_pos - diff, new_pos, next));
-        next = pick_random_value();
+        anim.Push(TileAnimation(new_pos - diff, new_pos, next));
+        next = PickRandomValue();
     }
 
     return any;
 }
 
-uint8_t game::pick_random_value()
+uint8_t Game::PickRandomValue()
 {
     // pretty much exactly taken from threesjs, with the math modified to match the value representation used here.
     bool bonus = std::any_of(state.tiles, state.tiles + BOARD_EXTENT, [](uint8_t v) { return v >= 7; });
     if (bonus && (rand() % 100) < 5)
     {
-        g_bonus_deck.clear();
+        g_bonus_deck.Clear();
         uint8_t highest = *std::max_element(state.tiles, state.tiles + BOARD_EXTENT);
         uint8_t size = highest - 2 * 3;
         for (int i = 0; i < size; ++i)
         {
-            g_bonus_deck.push(4 + i);
+            g_bonus_deck.Push(4 + i);
         }
-        return g_bonus_deck.pick();
+        return g_bonus_deck.Pick();
     }
 
-    if (g_deck.empty())
+    if (g_deck.IsEmpty())
     {
-        g_deck.reset();
+        g_deck.Reset();
     }
-    return g_deck.pop();
+    return g_deck.Pop();
 }
 
-game::pos game::pick_random_target(inputs dir)
+Game::pos Game::PickRandomTarget(EInputs dir)
 {
     pos p;
     switch (dir)
     {
-    case inputs::left:
-    case inputs::right:
+    case EInputs::Left:
+    case EInputs::Right:
         {
-            p.x = dir == inputs::left ? (BOARD_EXTENT - 1) : 0;
-            random_pool<uint8_t, BOARD_EXTENT> y_pool;
-            for (int i = 0; i < anim.moving_count; ++i)
+            p.x = dir == EInputs::Left ? (BOARD_EXTENT - 1) : 0;
+            RandomPool<uint8_t, BOARD_EXTENT> y_pool;
+            for (int i = 0; i < anim.nMoving; ++i)
             {
-                y_pool.push_unique(anim.moving[i].from.y);
+                y_pool.PushUnique(anim.moving[i].from.y);
             }
-            p.y = y_pool.pick();
+            p.y = y_pool.Pick();
         }
         break;
 
-    case inputs::up:
-    case inputs::down:
+    case EInputs::Up:
+    case EInputs::Down:
         {
-            p.y = dir == inputs::up ? (BOARD_EXTENT - 1) : 0;
-            random_pool<uint8_t, BOARD_EXTENT> x_pool;
-            for (int i = 0; i < anim.moving_count; ++i)
+            p.y = dir == EInputs::Up ? (BOARD_EXTENT - 1) : 0;
+            RandomPool<uint8_t, BOARD_EXTENT> x_pool;
+            for (int i = 0; i < anim.nMoving; ++i)
             {
-                x_pool.push_unique(anim.moving[i].from.x);
+                x_pool.PushUnique(anim.moving[i].from.x);
             }
-            p.x = x_pool.pick();
+            p.x = x_pool.Pick();
         }
         break;
+    default: break;
     }
     return p;
 }
 
-game::inputs game::read_input() const
+Game::EInputs Game::ReadInput() const
 {
-    ImGuiIO &io = ImGui::GetIO();
-    if (imgui_keys::no_mod(io))
+    for(int i = 0; i < sizeof(g_keyMap)/sizeof(g_keyMap[0]); ++i)
     {
-        for(int i = 0; i < sizeof(g_keyMap)/sizeof(g_keyMap[0]); ++i)
+        if (TUI::IsKeyPressed(g_keyMap[i].key))
         {
-            if (io.KeysDown[g_keyMap[i].key])
-            {
-                return g_keyMap[i].input;
-            }
+            return g_keyMap[i].input;
         }
     }
-    return inputs::none;
+    return EInputs::None;
 }
 
-bool game::update(inputs input)
+bool Game::Update(EInputs input)
 {
     bool stateChanged = false;
-    if (input == inputs::quit)
+    if (input == EInputs::Quit)
     {
         quit = true;
     }
-    else if (input == inputs::restart)
+    else if (input == EInputs::Restart)
     {
-        reset();
+        Reset();
         stateChanged = true;
     }
 
-    ImGuiIO &io = ImGui::GetIO();
     switch (phase)
     {
-    case phases::active:
-        if (try_board_move(input))
+    case EPhases::Active:
+        if (TryMoveBoard(input))
         {
             anim.alpha = 0.0f;
-            phase = phases::animating;
+            phase = EPhases::Animating;
             stateChanged = true;
         }
         break;
-    case phases::animating:
-        anim.alpha += io.DeltaTime * (1.0f / cfg.anim_duration);
+    case EPhases::Animating:
+        anim.alpha += TUI::GetDeltaSeconds() * (1.0f / cfg.animSeconds);
         if (anim.alpha > 1.0f)
         {
             for (int i = 0; i < BOARD_SIZE; ++i)
             {
                 state.tiles[i] = anim.result[i] != 0 ? anim.result[i] : state.tiles[i];
             }
-            anim.reset();
+            anim.Reset();
 
-            phase = game_over() ? phases::game_over : (game_won() ? phases::game_won : phases::active);
+            phase = IsGameOver() ? EPhases::GameOver : (IsGameWon() ? EPhases::GameWon : EPhases::Active);
         }
         stateChanged = true;
         break;
-    case phases::game_over:
-    case phases::game_won:
-        if (input == inputs::space)
+    case EPhases::GameOver:
+    case EPhases::GameWon:
+        if (input == EInputs::Space)
         {
-            reset();
+            Reset();
             stateChanged = true;
         }
         break;
+    default: break;
     }
     return stateChanged;
 }
 
-void game::draw() const
+void Game::Draw() const
 {
-    ImGuiIO &io = ImGui::GetIO();
+    int w, h;
+    TUI::GetSize(w, h);
+    TUI::ClearScreen();
 
-    if (ImGui::BeginMainMenuBar())
+    BoardRenderer::Render(cfg, state, anim, next);
+
+    TUI::ColorScope nextTileTextColor(TUI::EColors::Black, TUI::EColors::LightGray);
+    TUI::DrawLine(0, 0, w, 0);
+    TUI::DrawText(1, 0, "Terminal Threes");
+    TUI::DrawText(w - 23, 0, "Restart (F5) | Quit (q)");
+
+    if (phase == EPhases::GameOver || 
+        phase == EPhases::GameWon)
     {
-        ImGui::Text("Terminal Threes");
-        ImVec2 text_size = ImGui::CalcTextSize(g_bindings);
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - text_size.x - 5.0f);
-        ImGui::Text("%s", g_bindings);
-        ImGui::EndMainMenuBar();
-    }
-
-    ImGui::SetNextWindowPos(ImVec2(0, 1));
-    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - 1));
-    if (ImGui::Begin("main", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus))
-    {
-        board_renderer::render(cfg, state, anim, next);
-
-        if (phase == phases::game_over ||
-            phase == phases::game_won)
+        const int panelX = cfg.posX - cfg.tileSpacing;
+        const int panelY = cfg.posY + (BOARD_EXTENT / 2) * (cfg.tileHeight + cfg.tileSpacing) - 2;
+        const int panelW = BOARD_EXTENT * (cfg.tileWidth + cfg.tileSpacing) + cfg.tileSpacing;
+        const int panelH = 4;
+        TUI::ColorScope panelColor(TUI::EColors::Black, TUI::EColors::DarkGray);
+        TUI::DrawRect(panelX, panelY, panelW, panelH);
         {
-            ImGui::SetNextWindowPos(ImVec2(cfg.pos_x, cfg.pos_y + (BOARD_EXTENT / 2) * (cfg.tile_height + cfg.tile_spacing) - 2.5f));
-            ImGui::SetNextWindowSize(ImVec2(BOARD_EXTENT * (cfg.tile_width + cfg.tile_spacing) - 1.0f, 5.0f));
-            if (ImGui::Begin(
-                phase == phases::game_over ? "Game Over!" : "GAME WON!", 
-                nullptr, 
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-            {
-                ImGui::Dummy(ImVec2(0.0f, 1.0f));
-                ImGui::Text("Press space to start again");
-                ImGui::End();
-            }
+            TUI::ColorScope panelHeaderColor(TUI::EColors::Black, TUI::EColors::LightGray);
+            TUI::DrawLine(panelX, panelY, panelX + panelW - cfg.tileSpacing, panelY);
+            TUI::DrawText(panelX + 2, panelY, phase == EPhases::GameOver ? "Game Over!" : "GAME WON!");
         }
-
-        ImGui::End();
+        TUI::DrawText(panelX + 2, panelY + 2, "Press space to start again");
     }
 }
