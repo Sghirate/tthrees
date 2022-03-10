@@ -42,11 +42,6 @@ struct Pos2D
         return *this;
     }
 
-    operator int8_t() const
-    {
-        return GRID_SIZE > 0 ? (y * GRID_SIZE + x) : 0;
-    }
-
     T& operator[](T i)
     {
         return *(reinterpret_cast<T*>(this) + i);
@@ -57,9 +52,6 @@ struct Pos2D
         return *(reinterpret_cast<const T*>(this) + i);
     }
 
-    void Set(T x, T y)
-    {
-        this->x = x;
-        this->y = y;
-    }
+    inline void Set(T a_x, T a_y) { x = a_x; y = a_y; }
+    inline uint8_t ToIndex() const { return GRID_SIZE > 0 ? (y * GRID_SIZE + x) : 0; }
 };

@@ -1,5 +1,6 @@
 #include "game.h"
-#include "tui.h"
+#define TUI_IMPLEMENTATION
+#include "tui.hpp"
 #include <algorithm>
 #include <random>
 
@@ -207,11 +208,11 @@ struct BoardRenderer
             for (uint8_t x = 0; x < Game::BOARD_EXTENT; ++x)
             {
                 Game::pos p(x, y);
-                if (a_state.tiles[p] == 0)
+                if (a_state.tiles[p.ToIndex()] == 0)
                 {
                     continue;
                 }
-                RenderTile(a_cfg, a_state.tiles[p], CalculateRenderPosition(a_cfg, p));
+                RenderTile(a_cfg, a_state.tiles[p.ToIndex()], CalculateRenderPosition(a_cfg, p));
             }
         }
         // // draw moving tiles
@@ -326,9 +327,9 @@ void Game::Reset()
         pos p(
             rand() % BOARD_EXTENT,
             rand() % BOARD_EXTENT);
-        if (state.tiles[p] == 0)
+        if (state.tiles[p.ToIndex()] == 0)
         {
-            state.tiles[p] = PickRandomValue();
+            state.tiles[p.ToIndex()] = PickRandomValue();
             ++n;
         }
     }
@@ -339,19 +340,19 @@ void Game::Reset()
 uint8_t Game::CalculateTileMoveResult(pos a_from, pos a_diff)
 {
     pos to = a_from + a_diff;
-    if ((state.tiles[a_from] == 1 && state.tiles[to] == 2) ||
-        (state.tiles[a_from] == 2 && state.tiles[to] == 1)) // combine small numbers
+    if ((state.tiles[a_from.ToIndex()] == 1 && state.tiles[to.ToIndex()] == 2) ||
+        (state.tiles[a_from.ToIndex()] == 2 && state.tiles[to.ToIndex()] == 1)) // combine small numbers
     {
         return 3;
     }
-    else if (state.tiles[a_from] != 0 && state.tiles[to] == 0) // move to empty field
+    else if (state.tiles[a_from.ToIndex()] != 0 && state.tiles[to.ToIndex()] == 0) // move to empty field
     {
-        return state.tiles[a_from];
+        return state.tiles[a_from.ToIndex()];
     }
-    else if (state.tiles[a_from] >= 3 &&
-        state.tiles[a_from] == state.tiles[to]) // combine non-small equal numbers
+    else if (state.tiles[a_from.ToIndex()] >= 3 &&
+        state.tiles[a_from.ToIndex()] == state.tiles[to.ToIndex()]) // combine non-small equal numbers
     {
-        return state.tiles[a_from] + 1;
+        return state.tiles[a_from.ToIndex()] + 1;
     }
     return 0;
 }
@@ -443,9 +444,9 @@ bool Game::TryMoveTile(pos a_from, pos a_diff)
     if (result > 0)
     {
         pos to = a_from + a_diff;
-        anim.Push(TileAnimation(a_from, to, state.tiles[a_from]));
-        anim.result[to] = result;
-        state.tiles[a_from] = 0;
+        anim.Push(TileAnimation(a_from, to, state.tiles[a_from.ToIndex()]));
+        anim.result[to.ToIndex()] = result;
+        state.tiles[a_from.ToIndex()] = 0;
         return true;
     }
     return false;
@@ -483,7 +484,7 @@ bool Game::TryMoveBoard(EInputs dir)
     if (any)
     {
         pos new_pos = PickRandomTarget(dir);
-        anim.result[new_pos] = next;
+        anim.result[new_pos.ToIndex()] = next;
         anim.Push(TileAnimation(new_pos - diff, new_pos, next));
         next = PickRandomValue();
     }
