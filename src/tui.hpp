@@ -8,182 +8,182 @@ struct TUI
 
 enum class EColors : uint8_t
 {
-	Black                  = 0,
-	Blue                   = 1,
-	Green                  = 2,
-	Cyan                   = 3,
-	Red                    = 4,
-	Magenta                = 5,
-	Brown                  = 6,
-	LightGray              = 7,
-	DarkGray               = 8,
-	LightBlue              = 9,
-	LightGreen             = 10,
-	LightCyan              = 11,
-	LightRed               = 12,
-	LightMagenta           = 13,
-	Yellow                 = 14,
-	White                  = 15,
+    Black                  = 0,
+    Blue                   = 1,
+    Green                  = 2,
+    Cyan                   = 3,
+    Red                    = 4,
+    Magenta                = 5,
+    Brown                  = 6,
+    LightGray              = 7,
+    DarkGray               = 8,
+    LightBlue              = 9,
+    LightGreen             = 10,
+    LightCyan              = 11,
+    LightRed               = 12,
+    LightMagenta           = 13,
+    Yellow                 = 14,
+    White                  = 15,
 };
 enum class EKeys : uint8_t
 {
-	Key_None               = 0,
-	Key_Space              = 1,
-	Key_Apostrophe         = 2,
-	Key_Comma              = 3,
-	Key_Minus              = 4,
-	Key_Period             = 5,
-	Key_Slash              = 6,
-	Key_0                  = 7,
-	Key_1                  = 8,
-	Key_2                  = 9,
-	Key_3                  = 10,
-	Key_4                  = 11,
-	Key_5                  = 12,
-	Key_6                  = 13,
-	Key_7                  = 14,
-	Key_8                  = 15,
-	Key_9                  = 16,
-	Key_Semicolon          = 17,
-	Key_Equal              = 18,
-	Key_A                  = 19,
-	Key_B                  = 20,
-	Key_C                  = 21,
-	Key_D                  = 22,
-	Key_E                  = 23,
-	Key_F                  = 24,
-	Key_G                  = 25,
-	Key_H                  = 26,
-	Key_I                  = 27,
-	Key_J                  = 28,
-	Key_K                  = 29,
-	Key_L                  = 30,
-	Key_M                  = 31,
-	Key_N                  = 32,
-	Key_O                  = 33,
-	Key_P                  = 34,
-	Key_Q                  = 35,
-	Key_R                  = 36,
-	Key_S                  = 37,
-	Key_T                  = 38,
-	Key_U                  = 39,
-	Key_V                  = 40,
-	Key_W                  = 41,
-	Key_X                  = 42,
-	Key_Y                  = 43,
-	Key_Z                  = 44,
-	Key_LeftBracket        = 45,
-	Key_Backslash          = 46,
-	Key_RightBracket       = 47,
-	Key_GraveAccent        = 48,
-	Key_World1             = 49,
-	Key_World2             = 50,
-	Key_Escape             = 51,
-	Key_Enter              = 52,
-	Key_Tab                = 53,
-	Key_Backspace          = 54,
-	Key_Insert             = 55,
-	Key_Delete             = 56,
-	Key_Right              = 57,
-	Key_Left               = 58,
-	Key_Down               = 59,
-	Key_Up                 = 60,
-	Key_PageUp             = 61,
-	Key_PageDown           = 62,
-	Key_Home               = 63,
-	Key_End                = 64,
-	Key_CapsLock           = 65,
-	Key_ScrollLock         = 66,
-	Key_NumLock            = 67,
-	Key_PrintScreen        = 68,
-	Key_Pause              = 69,
-	Key_F1                 = 70,
-	Key_F2                 = 71,
-	Key_F3                 = 72,
-	Key_F4                 = 73,
-	Key_F5                 = 74,
-	Key_F6                 = 75,
-	Key_F7                 = 76,
-	Key_F8                 = 77,
-	Key_F9                 = 78,
-	Key_F10                = 79,
-	Key_F11                = 80,
-	Key_F12                = 81,
-	Key_F13                = 82,
-	Key_F14                = 83,
-	Key_F15                = 84,
-	Key_F16                = 85,
-	Key_F17                = 86,
-	Key_F18                = 87,
-	Key_F19                = 88,
-	Key_F20                = 89,
-	Key_F21                = 90,
-	Key_F22                = 91,
-	Key_F23                = 92,
-	Key_F24                = 93,
-	Key_F25                = 94,
-	Key_Kp0                = 95,
-	Key_Kp1                = 96,
-	Key_Kp2                = 97,
-	Key_Kp3                = 98,
-	Key_Kp4                = 99,
-	Key_Kp5                = 100,
-	Key_Kp6                = 101,
-	Key_Kp7                = 102,
-	Key_Kp8                = 103,
-	Key_Kp9                = 104,
-	Key_KpDecimal          = 105,
-	Key_KpDivide           = 106,
-	Key_KpMultiply         = 107,
-	Key_KpSubtract         = 108,
-	Key_KpAdd              = 109,
-	Key_KpEnter            = 110,
-	Key_KpEqual            = 111,
-	Key_LeftShift          = 112,
-	Key_LeftControl        = 113,
-	Key_LeftAlt            = 114,
-	Key_LeftSuper          = 115,
-	Key_RightShift         = 116,
-	Key_RightControl       = 117,
-	Key_RightAlt           = 118,
-	Key_RightSuper         = 119,
-	Key_Menu               = 120,
+    Key_None               = 0,
+    Key_Space              = 1,
+    Key_Apostrophe         = 2,
+    Key_Comma              = 3,
+    Key_Minus              = 4,
+    Key_Period             = 5,
+    Key_Slash              = 6,
+    Key_0                  = 7,
+    Key_1                  = 8,
+    Key_2                  = 9,
+    Key_3                  = 10,
+    Key_4                  = 11,
+    Key_5                  = 12,
+    Key_6                  = 13,
+    Key_7                  = 14,
+    Key_8                  = 15,
+    Key_9                  = 16,
+    Key_Semicolon          = 17,
+    Key_Equal              = 18,
+    Key_A                  = 19,
+    Key_B                  = 20,
+    Key_C                  = 21,
+    Key_D                  = 22,
+    Key_E                  = 23,
+    Key_F                  = 24,
+    Key_G                  = 25,
+    Key_H                  = 26,
+    Key_I                  = 27,
+    Key_J                  = 28,
+    Key_K                  = 29,
+    Key_L                  = 30,
+    Key_M                  = 31,
+    Key_N                  = 32,
+    Key_O                  = 33,
+    Key_P                  = 34,
+    Key_Q                  = 35,
+    Key_R                  = 36,
+    Key_S                  = 37,
+    Key_T                  = 38,
+    Key_U                  = 39,
+    Key_V                  = 40,
+    Key_W                  = 41,
+    Key_X                  = 42,
+    Key_Y                  = 43,
+    Key_Z                  = 44,
+    Key_LeftBracket        = 45,
+    Key_Backslash          = 46,
+    Key_RightBracket       = 47,
+    Key_GraveAccent        = 48,
+    Key_World1             = 49,
+    Key_World2             = 50,
+    Key_Escape             = 51,
+    Key_Enter              = 52,
+    Key_Tab                = 53,
+    Key_Backspace          = 54,
+    Key_Insert             = 55,
+    Key_Delete             = 56,
+    Key_Right              = 57,
+    Key_Left               = 58,
+    Key_Down               = 59,
+    Key_Up                 = 60,
+    Key_PageUp             = 61,
+    Key_PageDown           = 62,
+    Key_Home               = 63,
+    Key_End                = 64,
+    Key_CapsLock           = 65,
+    Key_ScrollLock         = 66,
+    Key_NumLock            = 67,
+    Key_PrintScreen        = 68,
+    Key_Pause              = 69,
+    Key_F1                 = 70,
+    Key_F2                 = 71,
+    Key_F3                 = 72,
+    Key_F4                 = 73,
+    Key_F5                 = 74,
+    Key_F6                 = 75,
+    Key_F7                 = 76,
+    Key_F8                 = 77,
+    Key_F9                 = 78,
+    Key_F10                = 79,
+    Key_F11                = 80,
+    Key_F12                = 81,
+    Key_F13                = 82,
+    Key_F14                = 83,
+    Key_F15                = 84,
+    Key_F16                = 85,
+    Key_F17                = 86,
+    Key_F18                = 87,
+    Key_F19                = 88,
+    Key_F20                = 89,
+    Key_F21                = 90,
+    Key_F22                = 91,
+    Key_F23                = 92,
+    Key_F24                = 93,
+    Key_F25                = 94,
+    Key_Kp0                = 95,
+    Key_Kp1                = 96,
+    Key_Kp2                = 97,
+    Key_Kp3                = 98,
+    Key_Kp4                = 99,
+    Key_Kp5                = 100,
+    Key_Kp6                = 101,
+    Key_Kp7                = 102,
+    Key_Kp8                = 103,
+    Key_Kp9                = 104,
+    Key_KpDecimal          = 105,
+    Key_KpDivide           = 106,
+    Key_KpMultiply         = 107,
+    Key_KpSubtract         = 108,
+    Key_KpAdd              = 109,
+    Key_KpEnter            = 110,
+    Key_KpEqual            = 111,
+    Key_LeftShift          = 112,
+    Key_LeftControl        = 113,
+    Key_LeftAlt            = 114,
+    Key_LeftSuper          = 115,
+    Key_RightShift         = 116,
+    Key_RightControl       = 117,
+    Key_RightAlt           = 118,
+    Key_RightSuper         = 119,
+    Key_Menu               = 120,
 
-	Key_COUNT
+    Key_COUNT
 };
 enum class EModifiers : uint8_t
 {
-	Modifier_None          = 0x0,
-	Modifier_Control       = 0x1,
-	Modifier_Shift         = 0x2,
-	Modifier_Alt           = 0x4,
+    Modifier_None          = 0x0,
+    Modifier_Control       = 0x1,
+    Modifier_Shift         = 0x2,
+    Modifier_Alt           = 0x4,
 
-	Modifier_COUNT
+    Modifier_COUNT
 };
 
 union Color
 {
-	uint8_t raw;
-	struct
-	{
-		EColors foreground : 4;
-		EColors background : 4;
-	};
+    uint8_t raw;
+    struct
+    {
+        EColors foreground : 4;
+        EColors background : 4;
+    };
 
-	Color(uint8_t a_raw = 0) : raw(a_raw) {}
-	Color(EColors a_foreground, EColors a_background) : foreground(a_foreground), background(a_background) {}
+    Color(uint8_t a_raw = 0) : raw(a_raw) {}
+    Color(EColors a_foreground, EColors a_background) : foreground(a_foreground), background(a_background) {}
 
-	operator uint8_t() const { return raw; }
+    operator uint8_t() const { return raw; }
 };
 static Color s_color;
 struct ColorScope
 {
-	ColorScope(Color a_color) :m_oldColor(s_color)  { SetColor(a_color); }
-	ColorScope(EColors a_foreground, EColors a_background) : m_oldColor(s_color) { SetColor(a_foreground, a_background); }
-	~ColorScope() { SetColor(m_oldColor); }
+    ColorScope(Color a_color) :m_oldColor(s_color)  { SetColor(a_color); }
+    ColorScope(EColors a_foreground, EColors a_background) : m_oldColor(s_color) { SetColor(a_foreground, a_background); }
+    ~ColorScope() { SetColor(m_oldColor); }
 
 private:
-	Color m_oldColor;
+    Color m_oldColor;
 };
 
 static void Init(bool a_doubleBuffered = true);
@@ -323,6 +323,141 @@ struct Buffer
 char Buffer::s_eraseChar = ' ';
 
 } // namespace TUI_Shared
+
+void TUI::ClearScreen()
+{
+    TUI_Shared::g_consoleData.Clear();
+}
+
+float TUI::GetDeltaSeconds(float a_max)
+{
+    return TUI_Shared::g_frameTimer.GetDeltaSeconds(a_max);
+}
+
+bool TUI::IsKeyPressed(EKeys a_key, EModifiers a_modifiers)
+{
+    const int key = (int)a_key;
+    const uint8_t mods = (uint8_t)a_modifiers;
+    return a_key < EKeys::Key_COUNT
+        && mods == TUI_Shared::g_input.modifiers
+        && TUI_Shared::g_input.keys[key];
+}
+
+void TUI::GetSize(int& out_w, int& out_h)
+{
+    out_w = TUI_Shared::g_consoleData.width;
+    out_h = TUI_Shared::g_consoleData.height;
+}
+
+void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
+{
+    int w, h;
+    GetSize(w, h);
+    const int incX = (a_toX - a_fromX) < 0 ? -1 : ((a_toX - a_fromX) > 0 ? 1 : 0);
+    const int incY = (a_toY - a_fromY) < 0 ? -1 : ((a_toY - a_fromY) > 0 ? 1 : 0);
+    const int dx = abs(a_toX - a_fromX);
+    const int dy = abs(a_toY - a_fromY);
+
+    const int xStart = std::max(0, std::min(a_fromX, a_toX));
+    const int xEnd = std::min(w-1, std::max(a_fromX, a_toX));
+    const int yStart = std::max(0, std::min(a_fromY, a_toY));
+    const int yEnd = std::min(h-1, std::max(a_fromY, a_toY));
+
+    const TUI_Shared::Cell c(s_color, ' ');
+    if (dy == 0 && a_fromY >= 0 && a_fromY < h) // horizontal line
+    {
+        for (int x = xStart; x <= xEnd; ++x)
+            TUI_Shared::g_consoleData(x, a_fromY) = c;
+    }
+    else if (dx == 0 && a_fromX >= 0 && a_fromX < w) // vertical line
+    {
+        for (int y = yStart; y <= yEnd; ++y)
+            TUI_Shared::g_consoleData(a_fromX, y) = c;
+    }
+    else if (dx >= dy) // more horizontal than vertical
+    {
+        int slope = 2 * dy;
+        int error = -dx;
+        int errorInc = -2 * dx;
+        int y = a_fromY;
+        for (int x = a_fromX; x != a_toX + incX; x += incX)
+        {
+            if (x > 0 && x < w && y > 0 && y < h)
+                TUI_Shared::g_consoleData(x, y) = c;
+            error += slope;
+            if (error >= 0)
+            {
+                y += incY;
+                error += errorInc;
+            }
+        }
+    }
+    else // more vertical than horizontal
+    {
+        int slope = 2 * dx;
+        int error = -dy;
+        int errorInc = -2 * dy;
+        int x = a_fromX;
+        for (int y = a_fromY; y != a_toY + incY; y += incY)
+        {
+            if (x > 0 && x < w && y > 0 && y < h)
+                TUI_Shared::g_consoleData(x, y) = c;
+            error += slope;
+            if (error >= 0)
+            {
+                x += incX;
+                error += errorInc;
+            }
+        }
+    }
+}
+
+void TUI::DrawRect(int a_x, int a_y, int a_w, int a_h)
+{
+    int w, h;
+    GetSize(w, h);
+    const int x0 = std::max(0, std::min(a_x, a_x + a_w));
+    const int x1 = std::min(w, std::max(a_x, a_x + a_w));
+    const int y0 = std::max(0, std::min(a_y, a_y + a_h));
+    const int y1 = std::min(h, std::max(a_y, a_y + a_h));
+
+    const TUI_Shared::Cell c(s_color, ' ');
+    for (int y = y0; y < y1; ++y)
+        for (int x = x0; x < x1; ++x)
+            TUI_Shared::g_consoleData(x, y) = c;
+}
+
+void TUI::DrawChar(int a_x, int a_y, char a_c)
+{
+    int w, h;
+    GetSize(w, h);
+    if (a_x > 0 && a_x < w && a_y > 0 && a_y < h)
+    {
+        const TUI_Shared::Cell c(s_color, ' ');
+        TUI_Shared::g_consoleData(a_x, a_y) = c;
+    }
+}
+
+void TUI::DrawTextV(int a_x, int a_y, const char* a_format, va_list args)
+{
+    int w, h;
+    GetSize(w, h);
+    if (a_y < 0 || a_y >= h || a_x >= w)
+        return;
+
+    char buffer[1024];
+    snprintf(buffer, 1024, a_format, args);
+    size_t n = strlen(buffer);
+
+    for (int i = 0; i < n; ++i)
+    {
+        if (a_x + i >= 0 && a_x + i < w)
+        {
+            const TUI_Shared::Cell c(s_color, buffer[i]);
+            TUI_Shared::g_consoleData(a_x + i, a_y) = c;
+        }
+    }
+}
 
 #if defined(_WIN32)
 // Windows-Header-Diet:
@@ -920,138 +1055,4 @@ void TUI::EndFrame(int a_targetFps)
 #error UNSUPPORTED PLATFORM!
 #endif
 
-void TUI::ClearScreen()
-{
-    TUI_Shared::g_consoleData.Clear();
-}
-
-float TUI::GetDeltaSeconds(float a_max)
-{
-    return TUI_Shared::g_frameTimer.GetDeltaSeconds(a_max);
-}
-
-bool TUI::IsKeyPressed(EKeys a_key, EModifiers a_modifiers)
-{
-    const int key = (int)a_key;
-    const uint8_t mods = (uint8_t)a_modifiers;
-    return a_key < EKeys::Key_COUNT
-        && mods == TUI_Shared::g_input.modifiers
-        && TUI_Shared::g_input.keys[key];
-}
-
-void TUI::GetSize(int& out_w, int& out_h)
-{
-    out_w = TUI_Shared::g_consoleData.width;
-    out_h = TUI_Shared::g_consoleData.height;
-}
-
-void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
-{
-    int w, h;
-    GetSize(w, h);
-    const int incX = (a_toX - a_fromX) < 0 ? -1 : ((a_toX - a_fromX) > 0 ? 1 : 0);
-    const int incY = (a_toY - a_fromY) < 0 ? -1 : ((a_toY - a_fromY) > 0 ? 1 : 0);
-    const int dx = abs(a_toX - a_fromX);
-    const int dy = abs(a_toY - a_fromY);
-
-    const int xStart = std::max(0, std::min(a_fromX, a_toX));
-    const int xEnd = std::min(w-1, std::max(a_fromX, a_toX));
-    const int yStart = std::max(0, std::min(a_fromY, a_toY));
-    const int yEnd = std::min(h-1, std::max(a_fromY, a_toY));
-
-    const TUI_Shared::Cell c(s_color, ' ');
-    if (dy == 0 && a_fromY >= 0 && a_fromY < h) // horizontal line
-    {
-        for (int x = xStart; x <= xEnd; ++x)
-            TUI_Shared::g_consoleData(x, a_fromY) = c;
-    }
-    else if (dx == 0 && a_fromX >= 0 && a_fromX < w) // vertical line
-    {
-        for (int y = yStart; y <= yEnd; ++y)
-            TUI_Shared::g_consoleData(a_fromX, y) = c;
-    }
-    else if (dx >= dy) // more horizontal than vertical
-    {
-        int slope = 2 * dy;
-        int error = -dx;
-        int errorInc = -2 * dx;
-        int y = a_fromY;
-        for (int x = a_fromX; x != a_toX + incX; x += incX)
-        {
-            if (x > 0 && x < w && y > 0 && y < h)
-                TUI_Shared::g_consoleData(x, y) = c;
-            error += slope;
-            if (error >= 0)
-            {
-                y += incY;
-                error += errorInc;
-            }
-        }
-    }
-    else // more vertical than horizontal
-    {
-        int slope = 2 * dx;
-        int error = -dy;
-        int errorInc = -2 * dy;
-        int x = a_fromX;
-        for (int y = a_fromY; y != a_toY + incY; y += incY)
-        {
-            if (x > 0 && x < w && y > 0 && y < h)
-                TUI_Shared::g_consoleData(x, y) = c;
-            error += slope;
-            if (error >= 0)
-            {
-                x += incX;
-                error += errorInc;
-            }
-        }
-    }
-}
-
-void TUI::DrawRect(int a_x, int a_y, int a_w, int a_h)
-{
-    int w, h;
-    GetSize(w, h);
-    const int x0 = std::max(0, std::min(a_x, a_x + a_w));
-    const int x1 = std::min(w, std::max(a_x, a_x + a_w));
-    const int y0 = std::max(0, std::min(a_y, a_y + a_h));
-    const int y1 = std::min(h, std::max(a_y, a_y + a_h));
-
-    const TUI_Shared::Cell c(s_color, ' ');
-    for (int y = y0; y < y1; ++y)
-        for (int x = x0; x < x1; ++x)
-            TUI_Shared::g_consoleData(x, y) = c;
-}
-
-void TUI::DrawChar(int a_x, int a_y, char a_c)
-{
-    int w, h;
-    GetSize(w, h);
-    if (a_x > 0 && a_x < w && a_y > 0 && a_y < h)
-    {
-        const TUI_Shared::Cell c(s_color, ' ');
-        TUI_Shared::g_consoleData(a_x, a_y) = c;
-    }
-}
-
-void TUI::DrawTextV(int a_x, int a_y, const char* a_format, va_list args)
-{
-    int w, h;
-    GetSize(w, h);
-    if (a_y < 0 || a_y >= h || a_x >= w)
-        return;
-
-    char buffer[1024];
-    snprintf(buffer, 1024, a_format, args);
-    size_t n = strlen(buffer);
-
-    for (int i = 0; i < n; ++i)
-    {
-        if (a_x + i >= 0 && a_x + i < w)
-        {
-            const TUI_Shared::Cell c(s_color, buffer[i]);
-            TUI_Shared::g_consoleData(a_x + i, a_y) = c;
-        }
-    }
-}
-#endif
+#endif // TUI_IMPLEMENTATION
