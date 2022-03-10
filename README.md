@@ -22,6 +22,8 @@ make
 ```
 
 **Windows**:
+
+Prerequisites:
 * CMake (>= 3.10)
 * A C++ compiler (tested with MSVC 2019)
 
