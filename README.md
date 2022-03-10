@@ -1,6 +1,6 @@
 # tthrees
 
-Terminal version of [Threes](http://asherv.com/threes/), initially to try out [imtui](https://github.com/ggerganov/imtui) - however, by now everything related to it has been replaced by custom code (tui.h).
+Terminal version of [Threes](http://asherv.com/threes/), initially to try out [imtui](https://github.com/ggerganov/imtui) - however, by now everything related to it has been replaced by custom code (src/tui.hpp).
 
 ## Building
 
