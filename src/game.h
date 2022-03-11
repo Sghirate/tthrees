@@ -5,9 +5,9 @@
 
 struct Game
 {
-    enum { BOARD_EXTENT = 4 };
-    enum { BOARD_SIZE = BOARD_EXTENT * BOARD_EXTENT };
-    
+    static constexpr uint8_t BOARD_EXTENT = 4;
+    static constexpr uint8_t BOARD_SIZE   = BOARD_EXTENT * BOARD_EXTENT;
+
     typedef Pos2D<int8_t, BOARD_EXTENT> pos;
 
     enum class EPhases : uint8_t
@@ -32,15 +32,15 @@ struct Game
 
         COUNT,
         FirstDir = Left,
-        LastDir = Down,
+        LastDir  = Down,
     };
     struct Config
     {
-        int posX = 3;
-        int posY = 3;
-        int tileWidth = 8;
-        int tileHeight = 5;
-        int tileSpacing = 1;
+        int posX          = 3;
+        int posY          = 3;
+        int tileWidth     = 8;
+        int tileHeight    = 5;
+        int tileSpacing   = 1;
         float animSeconds = 0.25f;
     };
     struct Board
@@ -57,14 +57,22 @@ struct Game
         pos to;
         uint8_t value;
 
-        TileAnimation() : value(0) {}
-        TileAnimation(pos from, pos to, uint8_t value) : from(from), to(to), value(value) {}
+        TileAnimation()
+            : value(0)
+        {
+        }
+        TileAnimation(pos from, pos to, uint8_t value)
+            : from(from)
+            , to(to)
+            , value(value)
+        {
+        }
     };
     struct BoardAnimation
     {
         float alpha = 0.0f;
         uint8_t result[BOARD_SIZE];
-        TileAnimation moving[BOARD_SIZE+BOARD_EXTENT]; // impossible worst case: the entire board moves and a full row/column spawns
+        TileAnimation moving[BOARD_SIZE + BOARD_EXTENT]; // impossible worst case: the entire board moves and a full row/column spawns
         uint8_t nMoving;
 
         BoardAnimation();

@@ -5,237 +5,249 @@
 
 struct TUI
 {
-
-enum class EColors : uint8_t
-{
-    Black                  = 0,
-    Blue                   = 1,
-    Green                  = 2,
-    Cyan                   = 3,
-    Red                    = 4,
-    Magenta                = 5,
-    Brown                  = 6,
-    LightGray              = 7,
-    DarkGray               = 8,
-    LightBlue              = 9,
-    LightGreen             = 10,
-    LightCyan              = 11,
-    LightRed               = 12,
-    LightMagenta           = 13,
-    Yellow                 = 14,
-    White                  = 15,
-};
-enum class EKeys : uint8_t
-{
-    Key_None               = 0,
-    Key_Space              = 1,
-    Key_Apostrophe         = 2,
-    Key_Comma              = 3,
-    Key_Minus              = 4,
-    Key_Period             = 5,
-    Key_Slash              = 6,
-    Key_0                  = 7,
-    Key_1                  = 8,
-    Key_2                  = 9,
-    Key_3                  = 10,
-    Key_4                  = 11,
-    Key_5                  = 12,
-    Key_6                  = 13,
-    Key_7                  = 14,
-    Key_8                  = 15,
-    Key_9                  = 16,
-    Key_Semicolon          = 17,
-    Key_Equal              = 18,
-    Key_A                  = 19,
-    Key_B                  = 20,
-    Key_C                  = 21,
-    Key_D                  = 22,
-    Key_E                  = 23,
-    Key_F                  = 24,
-    Key_G                  = 25,
-    Key_H                  = 26,
-    Key_I                  = 27,
-    Key_J                  = 28,
-    Key_K                  = 29,
-    Key_L                  = 30,
-    Key_M                  = 31,
-    Key_N                  = 32,
-    Key_O                  = 33,
-    Key_P                  = 34,
-    Key_Q                  = 35,
-    Key_R                  = 36,
-    Key_S                  = 37,
-    Key_T                  = 38,
-    Key_U                  = 39,
-    Key_V                  = 40,
-    Key_W                  = 41,
-    Key_X                  = 42,
-    Key_Y                  = 43,
-    Key_Z                  = 44,
-    Key_LeftBracket        = 45,
-    Key_Backslash          = 46,
-    Key_RightBracket       = 47,
-    Key_GraveAccent        = 48,
-    Key_World1             = 49,
-    Key_World2             = 50,
-    Key_Escape             = 51,
-    Key_Enter              = 52,
-    Key_Tab                = 53,
-    Key_Backspace          = 54,
-    Key_Insert             = 55,
-    Key_Delete             = 56,
-    Key_Right              = 57,
-    Key_Left               = 58,
-    Key_Down               = 59,
-    Key_Up                 = 60,
-    Key_PageUp             = 61,
-    Key_PageDown           = 62,
-    Key_Home               = 63,
-    Key_End                = 64,
-    Key_CapsLock           = 65,
-    Key_ScrollLock         = 66,
-    Key_NumLock            = 67,
-    Key_PrintScreen        = 68,
-    Key_Pause              = 69,
-    Key_F1                 = 70,
-    Key_F2                 = 71,
-    Key_F3                 = 72,
-    Key_F4                 = 73,
-    Key_F5                 = 74,
-    Key_F6                 = 75,
-    Key_F7                 = 76,
-    Key_F8                 = 77,
-    Key_F9                 = 78,
-    Key_F10                = 79,
-    Key_F11                = 80,
-    Key_F12                = 81,
-    Key_F13                = 82,
-    Key_F14                = 83,
-    Key_F15                = 84,
-    Key_F16                = 85,
-    Key_F17                = 86,
-    Key_F18                = 87,
-    Key_F19                = 88,
-    Key_F20                = 89,
-    Key_F21                = 90,
-    Key_F22                = 91,
-    Key_F23                = 92,
-    Key_F24                = 93,
-    Key_F25                = 94,
-    Key_Kp0                = 95,
-    Key_Kp1                = 96,
-    Key_Kp2                = 97,
-    Key_Kp3                = 98,
-    Key_Kp4                = 99,
-    Key_Kp5                = 100,
-    Key_Kp6                = 101,
-    Key_Kp7                = 102,
-    Key_Kp8                = 103,
-    Key_Kp9                = 104,
-    Key_KpDecimal          = 105,
-    Key_KpDivide           = 106,
-    Key_KpMultiply         = 107,
-    Key_KpSubtract         = 108,
-    Key_KpAdd              = 109,
-    Key_KpEnter            = 110,
-    Key_KpEqual            = 111,
-    Key_LeftShift          = 112,
-    Key_LeftControl        = 113,
-    Key_LeftAlt            = 114,
-    Key_LeftSuper          = 115,
-    Key_RightShift         = 116,
-    Key_RightControl       = 117,
-    Key_RightAlt           = 118,
-    Key_RightSuper         = 119,
-    Key_Menu               = 120,
-
-    Key_COUNT
-};
-enum class EModifiers : uint8_t
-{
-    Modifier_None          = 0x0,
-    Modifier_Control       = 0x1,
-    Modifier_Shift         = 0x2,
-    Modifier_Alt           = 0x4,
-
-    Modifier_COUNT
-};
-
-union Color
-{
-    uint8_t raw;
-    struct
+    enum class EColors : uint8_t
     {
-        EColors foreground : 4;
-        EColors background : 4;
+        Black        = 0,
+        Blue         = 1,
+        Green        = 2,
+        Cyan         = 3,
+        Red          = 4,
+        Magenta      = 5,
+        Brown        = 6,
+        LightGray    = 7,
+        DarkGray     = 8,
+        LightBlue    = 9,
+        LightGreen   = 10,
+        LightCyan    = 11,
+        LightRed     = 12,
+        LightMagenta = 13,
+        Yellow       = 14,
+        White        = 15,
+    };
+    enum class EKeys : uint8_t
+    {
+        Key_None         = 0,
+        Key_Space        = 1,
+        Key_Apostrophe   = 2,
+        Key_Comma        = 3,
+        Key_Minus        = 4,
+        Key_Period       = 5,
+        Key_Slash        = 6,
+        Key_0            = 7,
+        Key_1            = 8,
+        Key_2            = 9,
+        Key_3            = 10,
+        Key_4            = 11,
+        Key_5            = 12,
+        Key_6            = 13,
+        Key_7            = 14,
+        Key_8            = 15,
+        Key_9            = 16,
+        Key_Semicolon    = 17,
+        Key_Equal        = 18,
+        Key_A            = 19,
+        Key_B            = 20,
+        Key_C            = 21,
+        Key_D            = 22,
+        Key_E            = 23,
+        Key_F            = 24,
+        Key_G            = 25,
+        Key_H            = 26,
+        Key_I            = 27,
+        Key_J            = 28,
+        Key_K            = 29,
+        Key_L            = 30,
+        Key_M            = 31,
+        Key_N            = 32,
+        Key_O            = 33,
+        Key_P            = 34,
+        Key_Q            = 35,
+        Key_R            = 36,
+        Key_S            = 37,
+        Key_T            = 38,
+        Key_U            = 39,
+        Key_V            = 40,
+        Key_W            = 41,
+        Key_X            = 42,
+        Key_Y            = 43,
+        Key_Z            = 44,
+        Key_LeftBracket  = 45,
+        Key_Backslash    = 46,
+        Key_RightBracket = 47,
+        Key_GraveAccent  = 48,
+        Key_World1       = 49,
+        Key_World2       = 50,
+        Key_Escape       = 51,
+        Key_Enter        = 52,
+        Key_Tab          = 53,
+        Key_Backspace    = 54,
+        Key_Insert       = 55,
+        Key_Delete       = 56,
+        Key_Right        = 57,
+        Key_Left         = 58,
+        Key_Down         = 59,
+        Key_Up           = 60,
+        Key_PageUp       = 61,
+        Key_PageDown     = 62,
+        Key_Home         = 63,
+        Key_End          = 64,
+        Key_CapsLock     = 65,
+        Key_ScrollLock   = 66,
+        Key_NumLock      = 67,
+        Key_PrintScreen  = 68,
+        Key_Pause        = 69,
+        Key_F1           = 70,
+        Key_F2           = 71,
+        Key_F3           = 72,
+        Key_F4           = 73,
+        Key_F5           = 74,
+        Key_F6           = 75,
+        Key_F7           = 76,
+        Key_F8           = 77,
+        Key_F9           = 78,
+        Key_F10          = 79,
+        Key_F11          = 80,
+        Key_F12          = 81,
+        Key_F13          = 82,
+        Key_F14          = 83,
+        Key_F15          = 84,
+        Key_F16          = 85,
+        Key_F17          = 86,
+        Key_F18          = 87,
+        Key_F19          = 88,
+        Key_F20          = 89,
+        Key_F21          = 90,
+        Key_F22          = 91,
+        Key_F23          = 92,
+        Key_F24          = 93,
+        Key_F25          = 94,
+        Key_Kp0          = 95,
+        Key_Kp1          = 96,
+        Key_Kp2          = 97,
+        Key_Kp3          = 98,
+        Key_Kp4          = 99,
+        Key_Kp5          = 100,
+        Key_Kp6          = 101,
+        Key_Kp7          = 102,
+        Key_Kp8          = 103,
+        Key_Kp9          = 104,
+        Key_KpDecimal    = 105,
+        Key_KpDivide     = 106,
+        Key_KpMultiply   = 107,
+        Key_KpSubtract   = 108,
+        Key_KpAdd        = 109,
+        Key_KpEnter      = 110,
+        Key_KpEqual      = 111,
+        Key_LeftShift    = 112,
+        Key_LeftControl  = 113,
+        Key_LeftAlt      = 114,
+        Key_LeftSuper    = 115,
+        Key_RightShift   = 116,
+        Key_RightControl = 117,
+        Key_RightAlt     = 118,
+        Key_RightSuper   = 119,
+        Key_Menu         = 120,
+
+        Key_COUNT
+    };
+    enum class EModifiers : uint8_t
+    {
+        Modifier_None    = 0x0,
+        Modifier_Control = 0x1,
+        Modifier_Shift   = 0x2,
+        Modifier_Alt     = 0x4,
+
+        Modifier_COUNT
     };
 
-    Color(uint8_t a_raw = 0) : raw(a_raw) {}
-    Color(EColors a_foreground, EColors a_background) : foreground(a_foreground), background(a_background) {}
+    union Color
+    {
+        uint8_t raw;
+        struct
+        {
+            EColors foreground : 4;
+            EColors background : 4;
+        };
 
-    operator uint8_t() const { return raw; }
-};
-static Color s_color;
-struct ColorScope
-{
-    ColorScope(Color a_color) :m_oldColor(s_color)  { SetColor(a_color); }
-    ColorScope(EColors a_foreground, EColors a_background) : m_oldColor(s_color) { SetColor(a_foreground, a_background); }
-    ~ColorScope() { SetColor(m_oldColor); }
+        Color(uint8_t a_raw = 0)
+            : raw(a_raw)
+        {
+        }
+        Color(EColors a_foreground, EColors a_background)
+            : foreground(a_foreground)
+            , background(a_background)
+        {
+        }
 
-private:
-    Color m_oldColor;
-};
+        operator uint8_t() const { return raw; }
+    };
+    static Color s_color;
+    struct ColorScope
+    {
+        ColorScope(Color a_color)
+            : m_oldColor(s_color)
+        {
+            SetColor(a_color);
+        }
+        ColorScope(EColors a_foreground, EColors a_background)
+            : m_oldColor(s_color)
+        {
+            SetColor(a_foreground, a_background);
+        }
+        ~ColorScope() { SetColor(m_oldColor); }
 
-static void Init(bool a_doubleBuffered = true);
-static void Shutdown();
-static void BeginFrame(bool& out_sizeChanged);
-static void EndFrame(int a_targetFps = 60);
-static void ClearScreen();
-static float GetDeltaSeconds(float a_max = 0.03f);
-static bool IsKeyPressed(EKeys a_key, EModifiers a_modifiers = EModifiers::Modifier_None);
-static void GetSize(int& out_w, int& out_h);
-static void DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY);
-static void DrawRect(int a_x, int a_y, int a_w, int a_h);
-static void DrawChar(int a_x, int a_y, char a_c);
-static void DrawTextV(int a_x, int a_y, const char* a_format, va_list args);
-inline static void SetColor(EColors a_foreground, EColors a_background) { s_color = Color(a_foreground, a_background); }
-inline static void SetColor(Color a_color) { s_color = a_color; }
-inline static Color GetColor() { return s_color; };
-inline static void DrawLine(Color a_color, int a_fromX, int a_fromY, int a_toX, int a_toY)
-{
-    ColorScope color(a_color);
-    DrawLine(a_fromX, a_fromY, a_toX, a_toY);
-}
-inline static void DrawRect(Color a_color, int a_x, int a_y, int a_w, int a_h)
-{
-    ColorScope color(a_color);
-    DrawRect(a_x, a_y, a_w, a_h);
-}
-inline static void DrawChar(Color a_color, int a_x, int a_y, char a_c)
-{
-    ColorScope color(a_color);
-    DrawChar(a_x, a_y, a_c);
-}
-inline static void DrawText(int a_x, int a_y, const char* a_format, ...)
-{
-    va_list args;
-    va_start(args, a_format);
-    DrawTextV(a_x, a_y, a_format, args);
-    va_end(args);
-}
-inline static void DrawText(Color a_color, int a_x, int a_y, const char* a_format, ...)
-{
-    ColorScope color(a_color);
-    va_list args;
-    va_start(args, a_format);
-    DrawTextV(a_x, a_y, a_format, args);
-    va_end(args);
-}
+    private:
+        Color m_oldColor;
+    };
 
+    static void Init(bool a_doubleBuffered = true);
+    static void Shutdown();
+    static void BeginFrame(bool& out_sizeChanged);
+    static void EndFrame(int a_targetFps = 60);
+    static void ClearScreen();
+    static float GetDeltaSeconds(float a_max = 0.03f);
+    static bool IsKeyPressed(EKeys a_key, EModifiers a_modifiers = EModifiers::Modifier_None);
+    static void GetSize(int& out_w, int& out_h);
+    static void DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY);
+    static void DrawRect(int a_x, int a_y, int a_w, int a_h);
+    static void DrawChar(int a_x, int a_y, char a_c);
+    static void DrawTextV(int a_x, int a_y, const char* a_format, va_list args);
+    inline static void SetColor(EColors a_foreground, EColors a_background) { s_color = Color(a_foreground, a_background); }
+    inline static void SetColor(Color a_color) { s_color = a_color; }
+    inline static Color GetColor() { return s_color; };
+    inline static void DrawLine(Color a_color, int a_fromX, int a_fromY, int a_toX, int a_toY)
+    {
+        ColorScope color(a_color);
+        DrawLine(a_fromX, a_fromY, a_toX, a_toY);
+    }
+    inline static void DrawRect(Color a_color, int a_x, int a_y, int a_w, int a_h)
+    {
+        ColorScope color(a_color);
+        DrawRect(a_x, a_y, a_w, a_h);
+    }
+    inline static void DrawChar(Color a_color, int a_x, int a_y, char a_c)
+    {
+        ColorScope color(a_color);
+        DrawChar(a_x, a_y, a_c);
+    }
+    inline static void DrawText(int a_x, int a_y, const char* a_format, ...)
+    {
+        va_list args;
+        va_start(args, a_format);
+        DrawTextV(a_x, a_y, a_format, args);
+        va_end(args);
+    }
+    inline static void DrawText(Color a_color, int a_x, int a_y, const char* a_format, ...)
+    {
+        ColorScope color(a_color);
+        va_list args;
+        va_start(args, a_format);
+        DrawTextV(a_x, a_y, a_format, args);
+        va_end(args);
+    }
 };
 
 #ifdef TUI_IMPLEMENTATION
-#include <bitset>
 #include <chrono>
 #include <stdio.h>
 #include <string.h>
@@ -247,61 +259,139 @@ TUI::Color TUI::s_color(TUI::EColors::White, TUI::EColors::Black);
 namespace TUI_Shared
 {
 
+template <size_t BITS>
+struct BitSet
+{
+    struct Reference
+    {
+        Reference& operator=(bool a_value)
+        {
+            m_bitSet->Set(m_bit, a_value);
+            return *this;
+        }
+        Reference& Flip()
+        {
+            m_bitSet->Flip(m_bit);
+            return *this;
+        }
+        bool operator~() const
+        {
+            return !m_bitSet->Get(m_bit);
+        }
+        operator bool() const
+        {
+            return m_bitSet->Get(m_bit);
+        }
+
+    private:
+        friend struct BitSet<BITS>;
+        Reference(BitSet* a_bitSet, int a_bit)
+            : m_bitSet(a_bitSet)
+            , m_bit(a_bit)
+        {
+        }
+
+        BitSet* m_bitSet;
+        int m_bit;
+    };
+
+    BitSet() { Reset(); }
+
+    inline void Reset() { memset(m_bytes, 0, sizeof(uint8_t) * kByteCount); }
+    inline bool Get(int a_bit) const
+    {
+        const uint8_t idx  = a_bit / 8;
+        const uint8_t mask = 1 << (a_bit % 8);
+        return (m_bytes[idx] & mask) == mask;
+    }
+    inline void Set(int a_bit, bool a_value)
+    {
+        const uint8_t idx  = a_bit / 8;
+        const uint8_t mask = 1 << (a_bit % 8);
+        if (a_value)
+            m_bytes[idx] |= mask;
+        else
+            m_bytes[idx] &= ~mask;
+    }
+    inline void Flip(int a_bit)
+    {
+        const uint8_t idx  = a_bit / 8;
+        const uint8_t mask = 1 << (a_bit % 8);
+        m_bytes[idx] ^= mask;
+    }
+    Reference operator[](int a_bit) { return Reference(this, a_bit); }
+
+private:
+    enum
+    {
+        kByteCount = (BITS / 8 + (BITS % 8 != 0))
+    };
+    uint8_t m_bytes[kByteCount];
+};
+
 static struct FrameTimer
 {
-std::chrono::system_clock::time_point frameStart = std::chrono::system_clock::now();
-std::chrono::duration<float> deltaSeconds;
+    std::chrono::high_resolution_clock::time_point frameStart = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> deltaSeconds;
 
-void BeginFrame()
-{
-    frameStart = std::chrono::system_clock::now();
-}
-void EndFrame(int a_targetFps = 60)
-{
-    if (a_targetFps > 0)
+    void BeginFrame()
     {
-        const double targetMs = 1000.0 / static_cast<double>(a_targetFps);
-        auto frameEnd = std::chrono::system_clock::now();
-        std::chrono::duration<double, std::milli> frameDuration = frameEnd - frameStart;
-        if (frameDuration.count() < targetMs)
-        {
-            std::chrono::duration<double, std::milli> deltaMs(targetMs - frameDuration.count());
-            auto sleepDuration = std::chrono::duration_cast<std::chrono::milliseconds>(deltaMs);
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration.count()));
-        }
+        frameStart = std::chrono::high_resolution_clock::now();
     }
-    deltaSeconds = std::chrono::duration<float>(std::chrono::system_clock::now() - frameStart);
-}
-float GetDeltaSeconds(float a_max = 0.03f) const
-{
-    std::chrono::duration<float> max(a_max);
-    return (deltaSeconds > max ? max : deltaSeconds).count();
-}
+    void EndFrame(int a_targetFps = 60)
+    {
+        if (a_targetFps > 0)
+        {
+            const double targetMs                                   = 1000.0 / static_cast<double>(a_targetFps);
+            auto frameEnd                                           = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> frameDuration = frameEnd - frameStart;
+            if (frameDuration.count() < targetMs)
+            {
+                std::chrono::duration<double, std::milli> deltaMs(targetMs - frameDuration.count());
+                auto sleepDuration = std::chrono::duration_cast<std::chrono::milliseconds>(deltaMs);
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuration.count()));
+            }
+        }
+        deltaSeconds = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - frameStart);
+    }
+    float GetDeltaSeconds(float a_max = 0.03f) const
+    {
+        std::chrono::duration<float> max(a_max);
+        return (deltaSeconds > max ? max : deltaSeconds).count();
+    }
 } g_frameTimer;
 
 struct Input
 {
-    std::bitset<128> keys;
+    BitSet<128> keys;
     uint8_t modifiers = 0;
 } g_input;
 
 union Cell
 {
     uint16_t raw;
-    struct {
+    struct
+    {
         uint8_t color;
         uint8_t value;
     };
 
-    Cell(uint16_t a_raw = 0) : raw(a_raw) {}
-    Cell(uint8_t a_color, uint8_t a_value) : color(a_color), value(a_value) {}
+    Cell(uint16_t a_raw = 0)
+        : raw(a_raw)
+    {
+    }
+    Cell(uint8_t a_color, uint8_t a_value)
+        : color(a_color)
+        , value(a_value)
+    {
+    }
 
     operator int() const { return raw; }
 };
 struct Buffer
 {
     static char s_eraseChar;
-    uint16_t width = 0;
+    uint16_t width  = 0;
     uint16_t height = 0;
     std::vector<Cell> data;
 
@@ -312,7 +402,7 @@ struct Buffer
     }
     void Resize(uint16_t a_width, uint16_t a_height)
     {
-        width = a_width;
+        width  = a_width;
         height = a_height;
         data.resize(width * height);
         Clear();
@@ -336,11 +426,9 @@ float TUI::GetDeltaSeconds(float a_max)
 
 bool TUI::IsKeyPressed(EKeys a_key, EModifiers a_modifiers)
 {
-    const int key = (int)a_key;
+    const int key      = (int)a_key;
     const uint8_t mods = (uint8_t)a_modifiers;
-    return a_key < EKeys::Key_COUNT
-        && mods == TUI_Shared::g_input.modifiers
-        && TUI_Shared::g_input.keys[key];
+    return a_key < EKeys::Key_COUNT && mods == TUI_Shared::g_input.modifiers && TUI_Shared::g_input.keys[key];
 }
 
 void TUI::GetSize(int& out_w, int& out_h)
@@ -355,13 +443,13 @@ void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
     GetSize(w, h);
     const int incX = (a_toX - a_fromX) < 0 ? -1 : ((a_toX - a_fromX) > 0 ? 1 : 0);
     const int incY = (a_toY - a_fromY) < 0 ? -1 : ((a_toY - a_fromY) > 0 ? 1 : 0);
-    const int dx = abs(a_toX - a_fromX);
-    const int dy = abs(a_toY - a_fromY);
+    const int dx   = abs(a_toX - a_fromX);
+    const int dy   = abs(a_toY - a_fromY);
 
     const int xStart = std::max(0, std::min(a_fromX, a_toX));
-    const int xEnd = std::min(w-1, std::max(a_fromX, a_toX));
+    const int xEnd   = std::min(w - 1, std::max(a_fromX, a_toX));
     const int yStart = std::max(0, std::min(a_fromY, a_toY));
-    const int yEnd = std::min(h-1, std::max(a_fromY, a_toY));
+    const int yEnd   = std::min(h - 1, std::max(a_fromY, a_toY));
 
     const TUI_Shared::Cell c(s_color, ' ');
     if (dy == 0 && a_fromY >= 0 && a_fromY < h) // horizontal line
@@ -376,10 +464,10 @@ void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
     }
     else if (dx >= dy) // more horizontal than vertical
     {
-        int slope = 2 * dy;
-        int error = -dx;
+        int slope    = 2 * dy;
+        int error    = -dx;
         int errorInc = -2 * dx;
-        int y = a_fromY;
+        int y        = a_fromY;
         for (int x = a_fromX; x != a_toX + incX; x += incX)
         {
             if (x > 0 && x < w && y > 0 && y < h)
@@ -394,10 +482,10 @@ void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
     }
     else // more vertical than horizontal
     {
-        int slope = 2 * dx;
-        int error = -dy;
+        int slope    = 2 * dx;
+        int error    = -dy;
         int errorInc = -2 * dy;
-        int x = a_fromX;
+        int x        = a_fromX;
         for (int y = a_fromY; y != a_toY + incY; y += incY)
         {
             if (x > 0 && x < w && y > 0 && y < h)
@@ -529,12 +617,12 @@ static struct ConsoleBuffer
 {
     HANDLE handle;
     WORD attributes = 0;
-    int width = -1;
-    int height = -1;
-    int oldWidth = -1;
-    int oldHeight = -1;
-    int sizeX = -1;
-    int sizeY = -1;
+    int width       = -1;
+    int height      = -1;
+    int oldWidth    = -1;
+    int oldHeight   = -1;
+    int sizeX       = -1;
+    int sizeY       = -1;
     TUI_Shared::Buffer data;
 } g_consoleBuffer;
 void PresentBuffer()
@@ -641,39 +729,65 @@ static TUI::EKeys MapKey(KEY_EVENT_RECORD& a_keyEvent)
         case '7': return TUI::EKeys::Key_7;
         case '8': return TUI::EKeys::Key_8;
         case '9': return TUI::EKeys::Key_9;
-        case 'a': case 'A': return TUI::EKeys::Key_A;
-        case 'b': case 'B': return TUI::EKeys::Key_B;
-        case 'c': case 'C': return TUI::EKeys::Key_C;
-        case 'd': case 'D': return TUI::EKeys::Key_D;
-        case 'e': case 'E': return TUI::EKeys::Key_E;
-        case 'f': case 'F': return TUI::EKeys::Key_F;
-        case 'g': case 'G': return TUI::EKeys::Key_G;
-        case 'h': case 'H': return TUI::EKeys::Key_H;
-        case 'i': case 'I': return TUI::EKeys::Key_I;
-        case 'j': case 'J': return TUI::EKeys::Key_J;
-        case 'k': case 'K': return TUI::EKeys::Key_K;
-        case 'l': case 'L': return TUI::EKeys::Key_L;
-        case 'm': case 'M': return TUI::EKeys::Key_M;
-        case 'n': case 'N': return TUI::EKeys::Key_N;
-        case 'o': case 'O': return TUI::EKeys::Key_O;
-        case 'p': case 'P': return TUI::EKeys::Key_P;
-        case 'q': case 'Q': return TUI::EKeys::Key_Q;
-        case 'r': case 'R': return TUI::EKeys::Key_R;
-        case 's': case 'S': return TUI::EKeys::Key_S;
-        case 't': case 'T': return TUI::EKeys::Key_T;
-        case 'u': case 'U': return TUI::EKeys::Key_U;
-        case 'v': case 'V': return TUI::EKeys::Key_V;
-        case 'w': case 'W': return TUI::EKeys::Key_W;
-        case 'x': case 'X': return TUI::EKeys::Key_X;
-        case 'y': case 'Y': return TUI::EKeys::Key_Y;
-        case 'z': case 'Z': return TUI::EKeys::Key_Z;
+        case 'a':
+        case 'A': return TUI::EKeys::Key_A;
+        case 'b':
+        case 'B': return TUI::EKeys::Key_B;
+        case 'c':
+        case 'C': return TUI::EKeys::Key_C;
+        case 'd':
+        case 'D': return TUI::EKeys::Key_D;
+        case 'e':
+        case 'E': return TUI::EKeys::Key_E;
+        case 'f':
+        case 'F': return TUI::EKeys::Key_F;
+        case 'g':
+        case 'G': return TUI::EKeys::Key_G;
+        case 'h':
+        case 'H': return TUI::EKeys::Key_H;
+        case 'i':
+        case 'I': return TUI::EKeys::Key_I;
+        case 'j':
+        case 'J': return TUI::EKeys::Key_J;
+        case 'k':
+        case 'K': return TUI::EKeys::Key_K;
+        case 'l':
+        case 'L': return TUI::EKeys::Key_L;
+        case 'm':
+        case 'M': return TUI::EKeys::Key_M;
+        case 'n':
+        case 'N': return TUI::EKeys::Key_N;
+        case 'o':
+        case 'O': return TUI::EKeys::Key_O;
+        case 'p':
+        case 'P': return TUI::EKeys::Key_P;
+        case 'q':
+        case 'Q': return TUI::EKeys::Key_Q;
+        case 'r':
+        case 'R': return TUI::EKeys::Key_R;
+        case 's':
+        case 'S': return TUI::EKeys::Key_S;
+        case 't':
+        case 'T': return TUI::EKeys::Key_T;
+        case 'u':
+        case 'U': return TUI::EKeys::Key_U;
+        case 'v':
+        case 'V': return TUI::EKeys::Key_V;
+        case 'w':
+        case 'W': return TUI::EKeys::Key_W;
+        case 'x':
+        case 'X': return TUI::EKeys::Key_X;
+        case 'y':
+        case 'Y': return TUI::EKeys::Key_Y;
+        case 'z':
+        case 'Z': return TUI::EKeys::Key_Z;
     }
     return TUI::EKeys::Key_None;
 }
 
 static void PollInput()
 {
-    TUI_Shared::g_input.keys.reset();
+    TUI_Shared::g_input.keys.Reset();
 
     static INPUT_RECORD inputs[128];
     DWORD num;
@@ -688,10 +802,10 @@ static void PollInput()
         if (input.EventType == KEY_EVENT)
         {
             TUI::EKeys key = MapKey(input.Event.KeyEvent);
-            if (key != TUI::EKeys::Key_None && 
+            if (key != TUI::EKeys::Key_None &&
                 input.Event.KeyEvent.bKeyDown)
             {
-                int keyId = (int)key;
+                int keyId                       = (int)key;
                 TUI_Shared::g_input.keys[keyId] = true;
             }
         }
@@ -708,17 +822,16 @@ void TUI::Init(bool a_doubleBuffered)
     TUI_Platform::g_consoleState.oldHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
     TUI_Platform::g_consoleBuffer.handle = CreateConsoleScreenBuffer(
-        GENERIC_READ|GENERIC_WRITE,
-        FILE_SHARE_READ|FILE_SHARE_WRITE,
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
         0,
         CONSOLE_TEXTMODE_BUFFER,
         0);
     TUI_Platform::Assert(TUI_Platform::g_consoleBuffer.handle != INVALID_HANDLE_VALUE, _T("Could not create console screen buffer: %ld\n"), GetLastError());
-    SetConsoleMode(TUI_Platform::g_consoleBuffer.handle, ENABLE_PROCESSED_INPUT|DISABLE_NEWLINE_AUTO_RETURN);
+    SetConsoleMode(TUI_Platform::g_consoleBuffer.handle, ENABLE_PROCESSED_INPUT | DISABLE_NEWLINE_AUTO_RETURN);
     TUI_Platform::DisableCursor(TUI_Platform::g_consoleBuffer);
 
     TUI_Platform::PresentBuffer();
-
 
     TUI_Platform::g_consoleState.isInitialized = true;
 
@@ -742,10 +855,10 @@ void TUI::BeginFrame(bool& out_sizeChanged)
 
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(buffer.handle, &csbi);
-    buffer.width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    buffer.width  = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     buffer.height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-    if (buffer.width != buffer.oldWidth || 
+    if (buffer.width != buffer.oldWidth ||
         buffer.height != buffer.oldHeight)
     {
         TUI_Platform::DisableCursor(buffer);
@@ -754,12 +867,12 @@ void TUI::BeginFrame(bool& out_sizeChanged)
         size.Y = (USHORT)buffer.height;
         SetConsoleScreenBufferSize(buffer.handle, size);
 
-        COORD coord = {0,0};
+        COORD coord = { 0, 0 };
         DWORD written;
         FillConsoleOutputAttribute(buffer.handle, 0, size.X * size.Y, coord, &written);
         FillConsoleOutputCharacter(buffer.handle, ' ', size.X * size.Y, coord, &written);
 
-        buffer.oldWidth = buffer.width;
+        buffer.oldWidth  = buffer.width;
         buffer.oldHeight = buffer.height;
 
         out_sizeChanged = true;
@@ -782,9 +895,9 @@ void TUI::BeginFrame(bool& out_sizeChanged)
 
 void TUI::EndFrame(int a_targetFps)
 {
-    HANDLE console = TUI_Platform::g_consoleBuffer.handle;
+    HANDLE console            = TUI_Platform::g_consoleBuffer.handle;
     TUI_Shared::Buffer& cache = TUI_Platform::g_consoleBuffer.data;
-    TUI_Shared::Buffer& data = TUI_Shared::g_consoleData;
+    TUI_Shared::Buffer& data  = TUI_Shared::g_consoleData;
     if (cache.width != data.width || cache.height != data.height)
         cache.Resize(data.width, data.height);
 
@@ -794,12 +907,12 @@ void TUI::EndFrame(int a_targetFps)
         for (int x = 0; x < data.width; ++x)
         {
             const TUI_Shared::Cell& dataCell = data(x, y);
-            TUI_Shared::Cell& cacheCell = cache(x, y);
+            TUI_Shared::Cell& cacheCell      = cache(x, y);
             if (cacheCell.raw != dataCell.raw)
             {
                 const COORD coord = { (SHORT)x, (SHORT)y };
-                const WORD color = dataCell.color;
-                const char value = dataCell.value;
+                const WORD color  = dataCell.color;
+                const char value  = dataCell.value;
                 WriteConsoleOutputAttribute(console, &color, 1, coord, &written);
                 WriteConsoleOutputCharacter(console, &value, 1, coord, &written);
                 cacheCell = dataCell;
@@ -822,9 +935,9 @@ static struct ConsoleState
 } g_consoleState;
 static struct ConsoleBuffer
 {
-    int width = -1;
-    int height = -1;
-    int oldWidth = -1;
+    int width     = -1;
+    int height    = -1;
+    int oldWidth  = -1;
     int oldHeight = -1;
     TUI_Shared::Buffer data;
 } g_consoleBuffer;
@@ -892,50 +1005,76 @@ static TUI::EKeys MapKey(int a_c)
         case '7': return TUI::EKeys::Key_7;
         case '8': return TUI::EKeys::Key_8;
         case '9': return TUI::EKeys::Key_9;
-        case 'a': case 'A': return TUI::EKeys::Key_A;
-        case 'b': case 'B': return TUI::EKeys::Key_B;
-        case 'c': case 'C': return TUI::EKeys::Key_C;
-        case 'd': case 'D': return TUI::EKeys::Key_D;
-        case 'e': case 'E': return TUI::EKeys::Key_E;
-        case 'f': case 'F': return TUI::EKeys::Key_F;
-        case 'g': case 'G': return TUI::EKeys::Key_G;
-        case 'h': case 'H': return TUI::EKeys::Key_H;
-        case 'i': case 'I': return TUI::EKeys::Key_I;
-        case 'j': case 'J': return TUI::EKeys::Key_J;
-        case 'k': case 'K': return TUI::EKeys::Key_K;
-        case 'l': case 'L': return TUI::EKeys::Key_L;
-        case 'm': case 'M': return TUI::EKeys::Key_M;
-        case 'n': case 'N': return TUI::EKeys::Key_N;
-        case 'o': case 'O': return TUI::EKeys::Key_O;
-        case 'p': case 'P': return TUI::EKeys::Key_P;
-        case 'q': case 'Q': return TUI::EKeys::Key_Q;
-        case 'r': case 'R': return TUI::EKeys::Key_R;
-        case 's': case 'S': return TUI::EKeys::Key_S;
-        case 't': case 'T': return TUI::EKeys::Key_T;
-        case 'u': case 'U': return TUI::EKeys::Key_U;
-        case 'v': case 'V': return TUI::EKeys::Key_V;
-        case 'w': case 'W': return TUI::EKeys::Key_W;
-        case 'x': case 'X': return TUI::EKeys::Key_X;
-        case 'y': case 'Y': return TUI::EKeys::Key_Y;
-        case 'z': case 'Z': return TUI::EKeys::Key_Z;
+        case 'a':
+        case 'A': return TUI::EKeys::Key_A;
+        case 'b':
+        case 'B': return TUI::EKeys::Key_B;
+        case 'c':
+        case 'C': return TUI::EKeys::Key_C;
+        case 'd':
+        case 'D': return TUI::EKeys::Key_D;
+        case 'e':
+        case 'E': return TUI::EKeys::Key_E;
+        case 'f':
+        case 'F': return TUI::EKeys::Key_F;
+        case 'g':
+        case 'G': return TUI::EKeys::Key_G;
+        case 'h':
+        case 'H': return TUI::EKeys::Key_H;
+        case 'i':
+        case 'I': return TUI::EKeys::Key_I;
+        case 'j':
+        case 'J': return TUI::EKeys::Key_J;
+        case 'k':
+        case 'K': return TUI::EKeys::Key_K;
+        case 'l':
+        case 'L': return TUI::EKeys::Key_L;
+        case 'm':
+        case 'M': return TUI::EKeys::Key_M;
+        case 'n':
+        case 'N': return TUI::EKeys::Key_N;
+        case 'o':
+        case 'O': return TUI::EKeys::Key_O;
+        case 'p':
+        case 'P': return TUI::EKeys::Key_P;
+        case 'q':
+        case 'Q': return TUI::EKeys::Key_Q;
+        case 'r':
+        case 'R': return TUI::EKeys::Key_R;
+        case 's':
+        case 'S': return TUI::EKeys::Key_S;
+        case 't':
+        case 'T': return TUI::EKeys::Key_T;
+        case 'u':
+        case 'U': return TUI::EKeys::Key_U;
+        case 'v':
+        case 'V': return TUI::EKeys::Key_V;
+        case 'w':
+        case 'W': return TUI::EKeys::Key_W;
+        case 'x':
+        case 'X': return TUI::EKeys::Key_X;
+        case 'y':
+        case 'Y': return TUI::EKeys::Key_Y;
+        case 'z':
+        case 'Z': return TUI::EKeys::Key_Z;
     }
     return TUI::EKeys::Key_None;
 }
 
 static void PollInput()
 {
-    TUI_Shared::g_input.keys.reset();
+    TUI_Shared::g_input.keys.Reset();
 
-    while (true) 
+    while (true)
     {
         int c = wgetch(stdscr);
-        if (c == ERR) 
+        if (c == ERR)
             break;
 
         TUI::EKeys key = MapKey(c);
         if (key != TUI::EKeys::Key_None)
         {
-            int keyId = (int)key;
+            int keyId                       = (int)key;
             TUI_Shared::g_input.keys[keyId] = true;
         }
     }
@@ -943,7 +1082,7 @@ static void PollInput()
 
 struct ColorPairs
 {
-    int operator()(const TUI::Color& a_color) 
+    int operator()(const TUI::Color& a_color)
     {
         if (m_cache[a_color.raw] < 1)
         {
@@ -992,10 +1131,10 @@ void TUI::BeginFrame(bool& out_sizeChanged)
 
     TUI_Platform::ConsoleBuffer& buffer = TUI_Platform::g_consoleBuffer;
     getmaxyx(stdscr, buffer.height, buffer.width);
-    if (buffer.width != buffer.oldWidth || 
+    if (buffer.width != buffer.oldWidth ||
         buffer.height != buffer.oldHeight)
     {
-        buffer.oldWidth = buffer.width;
+        buffer.oldWidth  = buffer.width;
         buffer.oldHeight = buffer.height;
 
         out_sizeChanged = true;
@@ -1015,7 +1154,7 @@ void TUI::EndFrame(int a_targetFps)
     wrefresh(stdscr);
 
     TUI_Shared::Buffer& cache = TUI_Platform::g_consoleBuffer.data;
-    TUI_Shared::Buffer& data = TUI_Shared::g_consoleData;
+    TUI_Shared::Buffer& data  = TUI_Shared::g_consoleData;
     if (cache.width != data.width || cache.height != data.height)
         cache.Resize(data.width, data.height);
 
@@ -1025,7 +1164,7 @@ void TUI::EndFrame(int a_targetFps)
         for (int x = 0; x < data.width; ++x)
         {
             const TUI_Shared::Cell& dataCell = data(x, y);
-            TUI_Shared::Cell& cacheCell = cache(x, y);
+            TUI_Shared::Cell& cacheCell      = cache(x, y);
             if (cacheCell.raw != dataCell.raw)
             {
                 if (dataCell.color != activeColor)

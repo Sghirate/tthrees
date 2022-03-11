@@ -1,8 +1,6 @@
 #include "game.h"
 #define TUI_IMPLEMENTATION
 #include "tui.hpp"
-#include <algorithm>
-#include <random>
 
 namespace
 {
@@ -41,20 +39,71 @@ const char g_texts[][9] = {
     "50331648",
 };
 
+static struct Random // PCG based
+{
+    Random(uint32_t a_seed)
+    {
+        uint64_t value = (((uint64_t)a_seed) << 1ULL) | 1ULL;
+        value          = Murmur3Avalanche64(value);
+        m_state[0]     = 0U;
+        m_state[1]     = (value << 1ULL) | 1ULL;
+        Next();
+        m_state[0] += Murmur3Avalanche64(value);
+        Next();
+    }
+    uint32_t Next()
+    {
+        uint64_t oldstate   = m_state[0];
+        m_state[0]          = oldstate * 0x5851f42d4c957f2dULL + m_state[1];
+        uint32_t xorshifted = (uint32_t)(((oldstate >> 18ULL) ^ oldstate) >> 27ULL);
+        uint32_t rot        = (uint32_t)(oldstate >> 59ULL);
+        return (xorshifted >> rot) | (xorshifted << ((-(int)rot) & 31));
+    }
+    template <typename T>
+    void Shuffle(T* a_buffer, size_t a_size)
+    {
+        for (size_t i = 0; i < a_size; ++i)
+        {
+            const size_t j = Next() % a_size;
+            const T temp   = a_buffer[i];
+            a_buffer[i]    = a_buffer[j];
+            a_buffer[j]    = temp;
+        }
+    }
+    template <typename T, size_t SIZE>
+    inline void Shuffle(T (&a_buffer)[SIZE])
+    {
+        Shuffle(a_buffer, SIZE);
+    }
+
+private:
+    static uint64_t Murmur3Avalanche64(uint64_t a_value)
+    {
+        a_value ^= a_value >> 33;
+        a_value *= 0xff51afd7ed558ccd;
+        a_value ^= a_value >> 33;
+        a_value *= 0xc4ceb9fe1a85ec53;
+        a_value ^= a_value >> 33;
+        return a_value;
+    }
+    uint64_t m_state[2];
+} g_random((uint32_t)time(NULL));
+
 struct
 {
     TUI::EKeys key;
     Game::EInputs input;
-} g_keyMap[] = { // note: order determines priority (descending)!
-    { TUI::EKeys::Key_Q,     Game::EInputs::Quit    },
-    { TUI::EKeys::Key_F5,    Game::EInputs::Restart },
-    { TUI::EKeys::Key_Left,  Game::EInputs::Left    },
-    { TUI::EKeys::Key_Up,    Game::EInputs::Up      },
-    { TUI::EKeys::Key_Right, Game::EInputs::Right   },
-    { TUI::EKeys::Key_Down,  Game::EInputs::Down    },
-    { TUI::EKeys::Key_Space, Game::EInputs::Space   },
+} g_keyMap[] = {
+    // note: order determines priority (descending)!
+    { TUI::EKeys::Key_Q, Game::EInputs::Quit },
+    { TUI::EKeys::Key_F5, Game::EInputs::Restart },
+    { TUI::EKeys::Key_Left, Game::EInputs::Left },
+    { TUI::EKeys::Key_Up, Game::EInputs::Up },
+    { TUI::EKeys::Key_Right, Game::EInputs::Right },
+    { TUI::EKeys::Key_Down, Game::EInputs::Down },
+    { TUI::EKeys::Key_Space, Game::EInputs::Space },
 };
-template<uint8_t SIZE>
+template <uint8_t SIZE>
 struct Deck
 {
     Deck()
@@ -69,9 +118,7 @@ struct Deck
             m_buffer[i] = (i / (SIZE / 3)) + 1;
         }
         m_n = 12;
-        std::random_device rd;
-        std::minstd_rand0 g(rd());
-        std::shuffle(m_buffer, m_buffer + SIZE, g);
+        g_random.Shuffle(m_buffer);
     }
     bool IsEmpty() const
     {
@@ -87,10 +134,13 @@ private:
     uint8_t m_n;
 };
 Deck<12> g_deck;
-template<typename T, uint8_t SIZE>
+template <typename T, uint8_t SIZE>
 struct RandomPool
 {
-    RandomPool() : m_n(0) {}
+    RandomPool()
+        : m_n(0)
+    {
+    }
 
     void Push(const T& option)
     {
@@ -109,7 +159,7 @@ struct RandomPool
     }
     T Pick()
     {
-        return m_options[rand() % m_n];
+        return m_options[g_random.Next() % m_n];
     }
     void Clear()
     {
@@ -136,8 +186,10 @@ struct BoardRenderer
     template <typename t>
     static t Clamp(t a_x, t a_min, t a_max)
     {
-        if (a_x < a_min) a_x = a_min;
-        if (a_x > a_max) a_x = a_max;
+        if (a_x < a_min)
+            a_x = a_min;
+        if (a_x > a_max)
+            a_x = a_max;
         return a_x;
     }
 
@@ -184,21 +236,21 @@ struct BoardRenderer
         // draw background
         {
             TUI::ColorScope boardLineColor(TUI::EColors::White, TUI::EColors::DarkGray);
-            const int boardWidth = Game::BOARD_EXTENT * (a_cfg.tileWidth + 1);
+            const int boardWidth  = Game::BOARD_EXTENT * (a_cfg.tileWidth + 1);
             const int boardHeight = Game::BOARD_EXTENT * (a_cfg.tileHeight + 1);
             TUI::DrawRect(a_cfg.posX, a_cfg.posY, boardWidth, boardHeight);
             TUI::ColorScope boardBackgroundColor(TUI::EColors::White, TUI::EColors::Black);
             for (int i = 0; i <= Game::BOARD_EXTENT; ++i)
             {
                 TUI::DrawLine(
-                    a_cfg.posX - a_cfg.tileSpacing, 
+                    a_cfg.posX - a_cfg.tileSpacing,
                     a_cfg.posY - a_cfg.tileSpacing + (i * (a_cfg.tileHeight + a_cfg.tileSpacing)),
                     a_cfg.posX + Game::BOARD_EXTENT * (a_cfg.tileWidth + a_cfg.tileSpacing) - a_cfg.tileSpacing,
                     a_cfg.posY - a_cfg.tileSpacing + (i * (a_cfg.tileHeight + a_cfg.tileSpacing)));
                 TUI::DrawLine(
-                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)), 
+                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)),
                     a_cfg.posY - a_cfg.tileSpacing,
-                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)), 
+                    a_cfg.posX - a_cfg.tileSpacing + (i * (a_cfg.tileWidth + a_cfg.tileSpacing)),
                     a_cfg.posY - a_cfg.tileSpacing + Game::BOARD_EXTENT * (a_cfg.tileHeight + a_cfg.tileSpacing));
             }
         }
@@ -216,18 +268,19 @@ struct BoardRenderer
             }
         }
         // // draw moving tiles
-        std::for_each(a_anim.moving, a_anim.moving + a_anim.nMoving, [&](const Game::TileAnimation& a)
+        for (int i = 0; i < a_anim.nMoving; ++i)
         {
+            const Game::TileAnimation& anim = a_anim.moving[i];
             RenderTile(
                 a_cfg,
-                a.value,
+                anim.value,
                 Interpolate(
-                    CalculateRenderPosition(a_cfg, a.from),
-                    CalculateRenderPosition(a_cfg, a.to),
+                    CalculateRenderPosition(a_cfg, anim.from),
+                    CalculateRenderPosition(a_cfg, anim.to),
                     Smootherstep(Clamp(a_anim.alpha, 0.0f, 0.9f))));
             // note: 0.9f is used to prevent an occasional overshoot issue
             //  might be worth trying to figure out why it happens . . .
-        });
+        }
         // draw next tile
         static Game::pos next_tile_pos(5, 0);
         rpos r = CalculateRenderPosition(a_cfg, next_tile_pos);
@@ -267,7 +320,7 @@ void Game::BoardAnimation::Push(TileAnimation anim)
 
 void Game::BoardAnimation::Reset()
 {
-    alpha = 0.0f;
+    alpha   = 0.0f;
     nMoving = 0;
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
@@ -306,7 +359,7 @@ int Game::Tick()
     TUI::BeginFrame(sizeChanged);
 
     EInputs input = ReadInput();
-    bool active = Update(input);
+    bool active   = Update(input);
 
     if (sizeChanged || active)
         Draw();
@@ -322,18 +375,18 @@ void Game::Reset()
     state.Reset();
     anim.Reset();
     int n = 0;
-    while(n < 9)
+    while (n < 9)
     {
         pos p(
-            rand() % BOARD_EXTENT,
-            rand() % BOARD_EXTENT);
+            g_random.Next() % BOARD_EXTENT,
+            g_random.Next() % BOARD_EXTENT);
         if (state.tiles[p.ToIndex()] == 0)
         {
             state.tiles[p.ToIndex()] = PickRandomValue();
             ++n;
         }
     }
-    next = PickRandomValue();
+    next  = PickRandomValue();
     phase = EPhases::Active;
 }
 
@@ -349,8 +402,7 @@ uint8_t Game::CalculateTileMoveResult(pos a_from, pos a_diff)
     {
         return state.tiles[a_from.ToIndex()];
     }
-    else if (state.tiles[a_from.ToIndex()] >= 3 &&
-        state.tiles[a_from.ToIndex()] == state.tiles[to.ToIndex()]) // combine non-small equal numbers
+    else if (state.tiles[a_from.ToIndex()] >= 3 && state.tiles[a_from.ToIndex()] == state.tiles[to.ToIndex()]) // combine non-small equal numbers
     {
         return state.tiles[a_from.ToIndex()] + 1;
     }
@@ -362,31 +414,31 @@ bool Game::IsBoardMovePossible(EInputs a_dir)
     pos diff = CalculateMoveDiff(a_dir);
     switch (a_dir)
     {
-    case EInputs::Left:
-        for (int x = 1; x < BOARD_EXTENT;++x)
-            for (int y = 0; y < BOARD_EXTENT;++y)
-                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
-                    return true;
-        break;
-    case EInputs::Right:
-        for (int x = BOARD_EXTENT - 2; x >= 0;--x)
-            for (int y = 0; y < BOARD_EXTENT;++y)
-                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
-                    return true;
-        break;
-    case EInputs::Up:
-        for (int x = 0; x < BOARD_EXTENT;++x)
-            for (int y = 1; y < BOARD_EXTENT;++y)
-                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
-                    return true;
-        break;
-    case EInputs::Down:
-        for (int x = 0; x < BOARD_EXTENT;++x)
-            for (int y = BOARD_EXTENT-2; y >= 0;--y)
-                if (CalculateTileMoveResult(pos(x, y), diff) > 0)
-                    return true;
-        break;
-    default: break;
+        case EInputs::Left:
+            for (int x = 1; x < BOARD_EXTENT; ++x)
+                for (int y = 0; y < BOARD_EXTENT; ++y)
+                    if (CalculateTileMoveResult(pos(x, y), diff) > 0)
+                        return true;
+            break;
+        case EInputs::Right:
+            for (int x = BOARD_EXTENT - 2; x >= 0; --x)
+                for (int y = 0; y < BOARD_EXTENT; ++y)
+                    if (CalculateTileMoveResult(pos(x, y), diff) > 0)
+                        return true;
+            break;
+        case EInputs::Up:
+            for (int x = 0; x < BOARD_EXTENT; ++x)
+                for (int y = 1; y < BOARD_EXTENT; ++y)
+                    if (CalculateTileMoveResult(pos(x, y), diff) > 0)
+                        return true;
+            break;
+        case EInputs::Down:
+            for (int x = 0; x < BOARD_EXTENT; ++x)
+                for (int y = BOARD_EXTENT - 2; y >= 0; --y)
+                    if (CalculateTileMoveResult(pos(x, y), diff) > 0)
+                        return true;
+            break;
+        default: break;
     }
     return false;
 }
@@ -416,7 +468,7 @@ bool Game::IsGameWon()
 {
     for (int i = 0; i < BOARD_SIZE; ++i)
     {
-        constexpr int max = sizeof(g_texts)/sizeof(g_texts[0]) - 1;
+        constexpr int max = sizeof(g_texts) / sizeof(g_texts[0]) - 1;
         if (state.tiles[i] == max)
         {
             return true;
@@ -429,11 +481,11 @@ Game::pos Game::CalculateMoveDiff(EInputs a_dir)
 {
     switch (a_dir)
     {
-    case EInputs::Left:  return pos(-1,  0);
-    case EInputs::Right: return pos(+1,  0);
-    case EInputs::Up:    return pos( 0, -1);
-    case EInputs::Down:  return pos( 0, +1);
-    default: break;
+        case EInputs::Left: return pos(-1, 0);
+        case EInputs::Right: return pos(+1, 0);
+        case EInputs::Up: return pos(0, -1);
+        case EInputs::Down: return pos(0, +1);
+        default: break;
     }
     return pos(0, 0);
 }
@@ -445,7 +497,7 @@ bool Game::TryMoveTile(pos a_from, pos a_diff)
     {
         pos to = a_from + a_diff;
         anim.Push(TileAnimation(a_from, to, state.tiles[a_from.ToIndex()]));
-        anim.result[to.ToIndex()] = result;
+        anim.result[to.ToIndex()]     = result;
         state.tiles[a_from.ToIndex()] = 0;
         return true;
     }
@@ -458,32 +510,32 @@ bool Game::TryMoveBoard(EInputs dir)
     bool any = false;
     switch (dir)
     {
-    case EInputs::Left:
-        for (int x = 1; x < BOARD_EXTENT;++x)
-            for (int y = 0; y < BOARD_EXTENT;++y)
-                any |= TryMoveTile(pos(x, y), diff);
-        break;
-    case EInputs::Right:
-        for (int x = BOARD_EXTENT - 2; x >= 0;--x)
-            for (int y = 0; y < BOARD_EXTENT;++y)
-                any |= TryMoveTile(pos(x, y), diff);
-        break;
-    case EInputs::Up:
-        for (int x = 0; x < BOARD_EXTENT;++x)
-            for (int y = 1; y < BOARD_EXTENT;++y)
-                any |= TryMoveTile(pos(x, y), diff);
-        break;
-    case EInputs::Down:
-        for (int x = 0; x < BOARD_EXTENT;++x)
-            for (int y = BOARD_EXTENT-2; y >= 0;--y)
-                any |= TryMoveTile(pos(x, y), diff);
-        break;
-    default: break;
+        case EInputs::Left:
+            for (int x = 1; x < BOARD_EXTENT; ++x)
+                for (int y = 0; y < BOARD_EXTENT; ++y)
+                    any |= TryMoveTile(pos(x, y), diff);
+            break;
+        case EInputs::Right:
+            for (int x = BOARD_EXTENT - 2; x >= 0; --x)
+                for (int y = 0; y < BOARD_EXTENT; ++y)
+                    any |= TryMoveTile(pos(x, y), diff);
+            break;
+        case EInputs::Up:
+            for (int x = 0; x < BOARD_EXTENT; ++x)
+                for (int y = 1; y < BOARD_EXTENT; ++y)
+                    any |= TryMoveTile(pos(x, y), diff);
+            break;
+        case EInputs::Down:
+            for (int x = 0; x < BOARD_EXTENT; ++x)
+                for (int y = BOARD_EXTENT - 2; y >= 0; --y)
+                    any |= TryMoveTile(pos(x, y), diff);
+            break;
+        default: break;
     }
 
     if (any)
     {
-        pos new_pos = PickRandomTarget(dir);
+        pos new_pos                    = PickRandomTarget(dir);
         anim.result[new_pos.ToIndex()] = next;
         anim.Push(TileAnimation(new_pos - diff, new_pos, next));
         next = PickRandomValue();
@@ -495,11 +547,18 @@ bool Game::TryMoveBoard(EInputs dir)
 uint8_t Game::PickRandomValue()
 {
     // pretty much exactly taken from threesjs, with the math modified to match the value representation used here.
-    bool bonus = std::any_of(state.tiles, state.tiles + BOARD_EXTENT, [](uint8_t v) { return v >= 7; });
+    bool bonus      = false;
+    uint8_t highest = 0;
+    for (uint8_t value : state.tiles)
+    {
+        if (value >= 7)
+            bonus = true;
+        if (value > highest)
+            highest = value;
+    }
     if (bonus && (rand() % 100) < 5)
     {
         g_bonus_deck.Clear();
-        uint8_t highest = *std::max_element(state.tiles, state.tiles + BOARD_EXTENT);
         uint8_t size = highest - 2 * 3;
         for (int i = 0; i < size; ++i)
         {
@@ -520,8 +579,8 @@ Game::pos Game::PickRandomTarget(EInputs dir)
     pos p;
     switch (dir)
     {
-    case EInputs::Left:
-    case EInputs::Right:
+        case EInputs::Left:
+        case EInputs::Right:
         {
             p.x = dir == EInputs::Left ? (BOARD_EXTENT - 1) : 0;
             RandomPool<uint8_t, BOARD_EXTENT> y_pool;
@@ -533,8 +592,8 @@ Game::pos Game::PickRandomTarget(EInputs dir)
         }
         break;
 
-    case EInputs::Up:
-    case EInputs::Down:
+        case EInputs::Up:
+        case EInputs::Down:
         {
             p.y = dir == EInputs::Up ? (BOARD_EXTENT - 1) : 0;
             RandomPool<uint8_t, BOARD_EXTENT> x_pool;
@@ -545,14 +604,14 @@ Game::pos Game::PickRandomTarget(EInputs dir)
             p.x = x_pool.Pick();
         }
         break;
-    default: break;
+        default: break;
     }
     return p;
 }
 
 Game::EInputs Game::ReadInput() const
 {
-    for(int i = 0; i < sizeof(g_keyMap)/sizeof(g_keyMap[0]); ++i)
+    for (int i = 0; i < sizeof(g_keyMap) / sizeof(g_keyMap[0]); ++i)
     {
         if (TUI::IsKeyPressed(g_keyMap[i].key))
         {
@@ -577,37 +636,37 @@ bool Game::Update(EInputs input)
 
     switch (phase)
     {
-    case EPhases::Active:
-        if (TryMoveBoard(input))
-        {
-            anim.alpha = 0.0f;
-            phase = EPhases::Animating;
-            stateChanged = true;
-        }
-        break;
-    case EPhases::Animating:
-        anim.alpha += TUI::GetDeltaSeconds() * (1.0f / cfg.animSeconds);
-        if (anim.alpha > 1.0f)
-        {
-            for (int i = 0; i < BOARD_SIZE; ++i)
+        case EPhases::Active:
+            if (TryMoveBoard(input))
             {
-                state.tiles[i] = anim.result[i] != 0 ? anim.result[i] : state.tiles[i];
+                anim.alpha   = 0.0f;
+                phase        = EPhases::Animating;
+                stateChanged = true;
             }
-            anim.Reset();
+            break;
+        case EPhases::Animating:
+            anim.alpha += TUI::GetDeltaSeconds() * (1.0f / cfg.animSeconds);
+            if (anim.alpha > 1.0f)
+            {
+                for (int i = 0; i < BOARD_SIZE; ++i)
+                {
+                    state.tiles[i] = anim.result[i] != 0 ? anim.result[i] : state.tiles[i];
+                }
+                anim.Reset();
 
-            phase = IsGameOver() ? EPhases::GameOver : (IsGameWon() ? EPhases::GameWon : EPhases::Active);
-        }
-        stateChanged = true;
-        break;
-    case EPhases::GameOver:
-    case EPhases::GameWon:
-        if (input == EInputs::Space)
-        {
-            Reset();
+                phase = IsGameOver() ? EPhases::GameOver : (IsGameWon() ? EPhases::GameWon : EPhases::Active);
+            }
             stateChanged = true;
-        }
-        break;
-    default: break;
+            break;
+        case EPhases::GameOver:
+        case EPhases::GameWon:
+            if (input == EInputs::Space)
+            {
+                Reset();
+                stateChanged = true;
+            }
+            break;
+        default: break;
     }
     return stateChanged;
 }
@@ -625,7 +684,7 @@ void Game::Draw() const
     TUI::DrawText(1, 0, "Terminal Threes");
     TUI::DrawText(w - 23, 0, "Restart (F5) | Quit (q)");
 
-    if (phase == EPhases::GameOver || 
+    if (phase == EPhases::GameOver ||
         phase == EPhases::GameWon)
     {
         const int panelX = cfg.posX - cfg.tileSpacing;
