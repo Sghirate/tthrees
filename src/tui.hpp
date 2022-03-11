@@ -208,22 +208,22 @@ struct TUI
     static float GetDeltaSeconds(float a_max = 0.03f);
     static bool IsKeyPressed(EKeys a_key, EModifiers a_modifiers = EModifiers::Modifier_None);
     static void GetSize(int& out_w, int& out_h);
-    static void DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY);
-    static void DrawRect(int a_x, int a_y, int a_w, int a_h);
+    static void DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY, char a_char = ' ');
+    static void DrawRect(int a_x, int a_y, int a_w, int a_h, char a_char = ' ');
     static void DrawChar(int a_x, int a_y, char a_c);
     static void DrawTextV(int a_x, int a_y, const char* a_format, va_list args);
     inline static void SetColor(EColors a_foreground, EColors a_background) { s_color = Color(a_foreground, a_background); }
     inline static void SetColor(Color a_color) { s_color = a_color; }
     inline static Color GetColor() { return s_color; };
-    inline static void DrawLine(Color a_color, int a_fromX, int a_fromY, int a_toX, int a_toY)
+    inline static void DrawLine(Color a_color, int a_fromX, int a_fromY, int a_toX, int a_toY, char a_char = ' ')
     {
         ColorScope color(a_color);
-        DrawLine(a_fromX, a_fromY, a_toX, a_toY);
+        DrawLine(a_fromX, a_fromY, a_toX, a_toY, a_char);
     }
-    inline static void DrawRect(Color a_color, int a_x, int a_y, int a_w, int a_h)
+    inline static void DrawRect(Color a_color, int a_x, int a_y, int a_w, int a_h, char a_char = ' ')
     {
         ColorScope color(a_color);
-        DrawRect(a_x, a_y, a_w, a_h);
+        DrawRect(a_x, a_y, a_w, a_h, a_char);
     }
     inline static void DrawChar(Color a_color, int a_x, int a_y, char a_c)
     {
@@ -437,7 +437,7 @@ void TUI::GetSize(int& out_w, int& out_h)
     out_h = TUI_Shared::g_consoleData.height;
 }
 
-void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
+void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY, char a_char)
 {
     int w, h;
     GetSize(w, h);
@@ -451,7 +451,7 @@ void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
     const int yStart = std::max(0, std::min(a_fromY, a_toY));
     const int yEnd   = std::min(h - 1, std::max(a_fromY, a_toY));
 
-    const TUI_Shared::Cell c(s_color, ' ');
+    const TUI_Shared::Cell c(s_color, a_char);
     if (dy == 0 && a_fromY >= 0 && a_fromY < h) // horizontal line
     {
         for (int x = xStart; x <= xEnd; ++x)
@@ -500,7 +500,7 @@ void TUI::DrawLine(int a_fromX, int a_fromY, int a_toX, int a_toY)
     }
 }
 
-void TUI::DrawRect(int a_x, int a_y, int a_w, int a_h)
+void TUI::DrawRect(int a_x, int a_y, int a_w, int a_h, char a_char)
 {
     int w, h;
     GetSize(w, h);
@@ -509,7 +509,7 @@ void TUI::DrawRect(int a_x, int a_y, int a_w, int a_h)
     const int y0 = std::max(0, std::min(a_y, a_y + a_h));
     const int y1 = std::min(h, std::max(a_y, a_y + a_h));
 
-    const TUI_Shared::Cell c(s_color, ' ');
+    const TUI_Shared::Cell c(s_color, a_char);
     for (int y = y0; y < y1; ++y)
         for (int x = x0; x < x1; ++x)
             TUI_Shared::g_consoleData(x, y) = c;
