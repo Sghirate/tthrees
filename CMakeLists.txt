@@ -1,5 +1,57 @@
 cmake_minimum_required(VERSION 3.10)
 
+# Compiler setup
+set_property(GLOBAL PROPERTY CXX_EXCEPTIONS OFF)
+set_property(GLOBAL PROPERTY CXX_RTTI OFF)
+set_property(GLOBAL PROPERTY CXX_STATIC_RUNTIME OFF)
+set_property(GLOBAL PROPERTY CXX_WARNINGS ON)
+set_property(GLOBAL PROPERTY CXX_WARNINGS_AS_ERRORS ON)
+if(MSVC)
+  # Purge unconditional use of /MDd, /MD and /EHsc.
+  foreach(flag
+          CMAKE_C_FLAGS                CMAKE_CXX_FLAGS
+          CMAKE_C_FLAGS_DEBUG          CMAKE_CXX_FLAGS_DEBUG
+          CMAKE_C_FLAGS_RELEASE        CMAKE_CXX_FLAGS_RELEASE
+          CMAKE_C_FLAGS_MINSIZEREL     CMAKE_CXX_FLAGS_MINSIZEREL
+          CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_CXX_FLAGS_RELWITHDEBINFO
+          )
+    string(REPLACE "/MDd"  "" ${flag} "${${flag}}")
+    string(REPLACE "/MD"   "" ${flag} "${${flag}}")
+    string(REPLACE "/EHsc" "" ${flag} "${${flag}}")
+    string(REPLACE "/GR" "" ${flag} "${${flag}}")
+  endforeach()
+  # Restore those same, but now selected by the properties
+  add_compile_options(
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>,ON>:/EHsc>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_RTTI>>,OFF>:/GR->
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_STATIC_RUNTIME>>,OFF>:$<$<CONFIG:Debug>:/MDd>$<$<NOT:$<CONFIG:Debug>>:/MD>>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_STATIC_RUNTIME>>,ON>:$<$<CONFIG:Debug>:/MTd>$<$<NOT:$<CONFIG:Debug>>:/MT>>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ON>:/W3>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,OFF>:/W0>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:/W4>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS_AS_ERRORS>>,ON>:/WX>
+  )
+else()
+  add_compile_options(
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>,OFF>:-fno-exceptions>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_RTTI>>,OFF>:-fno-rtti>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_STATIC_RUNTIME>>,ON>:-static>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ON>:-Wall>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,OFF>:-w>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Wall>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-pedantic>
+    $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS_AS_ERRORS>>,ON>:-Werror>
+  )
+  if (CMAKE_${COMPILER}_COMPILER_ID MATCHES "Clang")
+    add_compile_options(
+      $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Weverything>
+      $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Wno-c++98-compat>
+      $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Wno-c++98-compat-pedantic>
+    )
+  endif()
+endif()
+# ~Compiler setup
+
 project(tthrees)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
