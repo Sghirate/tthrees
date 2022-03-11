@@ -4,11 +4,10 @@ Standard: Cpp11
 TabWidth: 4
 IndentWidth: 4
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 0
 
 IndentCaseLabels: true
 AlignAfterOpenBracket: AlwaysBreak
-AlignArrayOfStructures: false
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlinesLeft: false
