@@ -225,7 +225,10 @@ struct BoardRenderer
         }
         TUI::ColorScope applyColor(c);
         TUI::DrawRect(r.x, r.y, a_cfg.tileWidth, a_cfg.tileHeight);
-        TUI::DrawText(r.x, r.y + a_cfg.tileHeight / 2, g_texts[a_value]);
+        if (a_drawValue)
+        {
+	    TUI::DrawText(r.x, r.y + a_cfg.tileHeight / 2, g_texts[a_value]);
+        }
     }
 
     static void Render(const Game::Config& a_cfg, const Game::Board& a_state, const Game::BoardAnimation& a_anim, uint8_t a_next)
