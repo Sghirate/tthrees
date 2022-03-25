@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 struct TUI
