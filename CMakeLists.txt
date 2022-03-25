@@ -90,8 +90,10 @@ add_executable(tthrees
 	${tthrees_FILES}
 )
 
-target_compile_features(tthrees PUBLIC 
-	cxx_std_17
+set_target_properties(tthrees PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
 )
 
 if(THREES_NCURSES)
