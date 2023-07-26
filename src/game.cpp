@@ -117,7 +117,7 @@ struct Deck
         {
             m_buffer[i] = (i / (SIZE / 3)) + 1;
         }
-        m_n = 12;
+        m_n = SIZE;
         g_random.Shuffle(m_buffer);
     }
     bool IsEmpty() const

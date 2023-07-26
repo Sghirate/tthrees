@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
+project(tthrees)
+
+message("${CMAKE_CXX_COMPILER_ID}")
+
 # Compiler setup
 set_property(GLOBAL PROPERTY CXX_EXCEPTIONS OFF)
 set_property(GLOBAL PROPERTY CXX_RTTI OFF)
@@ -33,6 +37,7 @@ if(MSVC)
   )
 else()
   add_compile_options(
+    -fstack-usage
     $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>,OFF>:-fno-exceptions>
     $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_RTTI>>,OFF>:-fno-rtti>
     $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_STATIC_RUNTIME>>,ON>:-static>
@@ -42,8 +47,9 @@ else()
     $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-pedantic>
     $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS_AS_ERRORS>>,ON>:-Werror>
   )
-  if (CMAKE_${COMPILER}_COMPILER_ID MATCHES "Clang")
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(
+      -ftime-trace
       $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Weverything>
       $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Wno-c++98-compat>
       $<$<STREQUAL:$<UPPER_CASE:$<TARGET_PROPERTY:CXX_WARNINGS>>,ALL>:-Wno-c++98-compat-pedantic>
@@ -51,8 +57,6 @@ else()
   endif()
 endif()
 # ~Compiler setup
-
-project(tthrees)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 

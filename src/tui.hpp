@@ -926,6 +926,7 @@ void TUI::EndFrame(int a_targetFps)
 
 #elif defined(HAS_NCURSES)
 #include <ncurses.h>
+#include <array>
 
 namespace TUI_Platform
 {
