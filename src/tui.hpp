@@ -535,7 +535,7 @@ void TUI::DrawTextV(int a_x, int a_y, const char* a_format, va_list args)
         return;
 
     char buffer[1024];
-    snprintf(buffer, 1024, a_format, args);
+    vsnprintf(buffer, 1024, a_format, args);
     size_t n = strlen(buffer);
 
     for (int i = 0; i < n; ++i)
