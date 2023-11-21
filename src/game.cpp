@@ -8,6 +8,36 @@ const char* g_bindings = "Restart (F5) | Quit (q)";
 // we have limited space in our tiles - therefore we have a limited number of possible tile values.
 // btw, formula for the tile values: f(i) = floor(2^i - 2^(i-2))
 //  => let's bake em in!
+uint g_scores[] = {
+           0,
+           1,
+           2,
+           3,
+           6,
+          12,
+          24,
+          48,
+          96,
+         192,
+         384,
+         768,
+        1536,
+        3072,
+        6144,
+       12288,
+       24576,
+       49152,
+       98304,
+      196608,
+      393216,
+      786432,
+     1572864,
+     3145728,
+     6291456,
+     1582912,
+    25165824,
+    50331648,
+};
 const char g_texts[][9] = {
     "        ",
     "    1   ",
@@ -681,6 +711,17 @@ void Game::Draw() const
     TUI::ClearScreen();
 
     BoardRenderer::Render(cfg, state, anim, next);
+
+    // Score
+    {
+        uint score = 0;
+        for (int i = 0; i < BOARD_SIZE; ++i)
+        {
+            score += g_scores[(phase == EPhases::Animating && anim.result[i] > 0) ? anim.result[i] : state.tiles[i]];
+        }
+        BoardRenderer::rpos r = BoardRenderer::CalculateRenderPosition(cfg, Game::pos(5, 1));
+        TUI::DrawText(r.x, r.y, "Score: %u", score);
+    }
 
     TUI::ColorScope nextTileTextColor(TUI::EColors::Black, TUI::EColors::LightGray);
     TUI::DrawLine(0, 0, w, 0);
